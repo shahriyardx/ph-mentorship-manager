@@ -1,4 +1,4 @@
-import ExampleComponent from "@/components/example";
+import ExampleComponent from "@/components/example"
 
 const page = () => {
   return (
@@ -13,7 +13,7 @@ const page = () => {
         <ExampleComponent />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default page;
+export default page

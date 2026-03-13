@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { trpc } from "@/trpc/client";
+import { trpc } from "@/trpc/client"
 
 const ExampleComponent = () => {
-  const { data, isLoading } = trpc.example.hello.useQuery();
+  const { data, isLoading } = trpc.example.hello.useQuery()
 
   return (
     <div>
@@ -13,7 +13,7 @@ const ExampleComponent = () => {
           ? data.message
           : "TRPC is not working"}
     </div>
-  );
-};
+  )
+}
 
-export default ExampleComponent;
+export default ExampleComponent
