@@ -1,4 +1,5 @@
 import ExampleComponent from "@/components/example"
+import Uploader from "@/components/uploader"
 
 const page = () => {
   return (
@@ -11,6 +12,7 @@ const page = () => {
         </p>
 
         <ExampleComponent />
+        <Uploader />
       </div>
     </div>
   )
