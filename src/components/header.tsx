@@ -1,6 +1,6 @@
 "use client"
 
-import { SignOut } from "@/components/auth-components"
+import { ShowIfNotAuthenticated, SignOut } from "@/components/auth-components"
 import { authClient } from "@/lib/auth-client"
 import Image from "next/image"
 import { Button } from "./ui/button"
@@ -23,22 +23,39 @@ const Header = () => {
         <h1 className="text-xl sm:text-2xl font-bold">
           <Link href="/">Mentorship Program</Link>
         </h1>
-        {data && (
-          <div className="ml-auto flex gap-2">
-            {data.user.role === "admin" && (
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/admin">Admin Dashboard</Link>
-              </Button>
-            )}
+        <div className="ml-auto flex gap-2">
+          {data && (
+            <>
+              {data.user.role === "admin" && (
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/admin">Admin Dashboard</Link>
+                </Button>
+              )}
 
-            {data.user.role === "mentor" && (
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/mentor">Mentor Dashboard</Link>
+              {data.user.role === "mentor" && (
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/mentor">Mentor Dashboard</Link>
+                </Button>
+              )}
+
+              <Button
+                variant="destructive"
+                size="lg"
+                onClick={() => authClient.signOut()}
+              >
+                Logout
               </Button>
-            )}
-            <SignOut />
-          </div>
-        )}
+            </>
+          )}
+
+          <ShowIfNotAuthenticated>
+            <Button
+              onClick={() => authClient.signIn.social({ provider: "discord" })}
+            >
+              Login
+            </Button>
+          </ShowIfNotAuthenticated>
+        </div>
       </div>
     </header>
   )

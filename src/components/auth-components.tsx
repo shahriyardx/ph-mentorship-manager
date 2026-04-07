@@ -37,19 +37,6 @@ export const SignIn = () => {
   )
 }
 
-export const SignOut = ({ className }: { className?: string }) => {
-  return (
-    <Button
-      variant="default"
-      size="lg"
-      onClick={() => authClient.signOut()}
-      className={className}
-    >
-      Logout
-    </Button>
-  )
-}
-
 export const ShowIfAuthenticated = ({
   children,
 }: {
