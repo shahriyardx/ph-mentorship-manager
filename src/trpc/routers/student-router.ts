@@ -2,6 +2,7 @@ import z from "zod"
 import { createTRPCRouter, protectedProcedure } from "../init"
 import { TRPCError } from "@trpc/server"
 import { env } from "@/lib/env"
+import { addUserToGuild } from "@/lib/auth"
 
 export const studentRouter = createTRPCRouter({
   settings: protectedProcedure.query(async ({ ctx }) => {
@@ -64,5 +65,19 @@ export const studentRouter = createTRPCRouter({
           batchId: assignedStudent.batchId,
         },
       })
+
+      const account = await ctx.prisma.account.findFirst({
+        where: {
+          userId: ctx.session.user.id,
+        },
+      })
+
+      if (!account)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No account found for this user",
+        })
+
+      await addUserToGuild(account.accessToken as string, account.accountId)
     }),
 })

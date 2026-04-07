@@ -21,8 +21,27 @@ export const getAuth = () => {
       discord: {
         clientId: env.DISCORD_CLIENT_ID,
         clientSecret: env.DICSORD_CLIENT_SECRET,
-        token: env.DISCORD_TOKEN,
+        scope: ["identify", "email", "guilds.join"],
       },
     },
   })
+}
+
+export const addUserToGuild = async (
+  accessToken: string,
+  discordUserId: string,
+) => {
+  await fetch(
+    `https://discord.com/api/v10/guilds/${env.SERVER_ID}/members/${discordUserId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bot ${env.DISCORD_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        access_token: accessToken,
+      }),
+    },
+  )
 }
