@@ -1,12 +1,17 @@
+"use client"
+
 import Header from "@/components/header"
 import { SidebarLink } from "@/components/sidebar-link"
 import { Separator } from "@/components/ui/separator"
+import { trpc } from "@/trpc/client"
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { data: batches } = trpc.admin.batches.useQuery()
+
   return (
     <div>
       <Header />
@@ -18,7 +23,19 @@ export default function AdminLayout({
               <SidebarLink href="/mentor">Dashboard</SidebarLink>
             </li>
             <li>
-              <SidebarLink href="/mentor/students">Students</SidebarLink>
+              <SidebarLink href={`/mentor/students/${batches?.[0]?.id}`}>
+                Students
+              </SidebarLink>
+              <div className="ml-3 px-3 border-l-2 mt-2">
+                {batches?.map((batch) => (
+                  <SidebarLink
+                    key={batch.id}
+                    href={`/mentor/students/${batch.id}`}
+                  >
+                    {batch.name}
+                  </SidebarLink>
+                ))}
+              </div>
             </li>
           </ul>
         </aside>

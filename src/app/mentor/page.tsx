@@ -5,8 +5,7 @@ const page = () => {
   return (
     <div>
       <div className="space-y-5">
-        <AddBatchForm />
-        <AddMentorForm />
+        <h1>Welcome to mentor dashboard</h1>
       </div>
     </div>
   )
