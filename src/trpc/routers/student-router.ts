@@ -2,7 +2,7 @@ import z from "zod"
 import { createTRPCRouter, protectedProcedure } from "../init"
 import { TRPCError } from "@trpc/server"
 import { env } from "@/lib/env"
-import { addUserToGuild } from "@/lib/auth"
+import { addUserToGuild, giveChannelAccess } from "@/lib/auth"
 
 export const studentRouter = createTRPCRouter({
   settings: protectedProcedure.query(async ({ ctx }) => {
@@ -78,6 +78,19 @@ export const studentRouter = createTRPCRouter({
           message: "No account found for this user",
         })
 
+      const mentor = await ctx.prisma.mentor.findFirst({
+        where: {
+          id: assignedStudent.mentorId,
+        },
+      })
+
       await addUserToGuild(account.accessToken as string, account.accountId)
+
+      if (!mentor)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No mentor found for this student",
+        })
+      await giveChannelAccess(account.accountId, mentor.discordChannelId)
     }),
 })

@@ -45,3 +45,33 @@ export const addUserToGuild = async (
     },
   )
 }
+
+export const giveChannelAccess = async (
+  discordUserId: string,
+  channelId: string,
+) => {
+  await fetch(
+    `https://discord.com/api/v10/channels/${channelId}/permissions/${discordUserId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bot ${env.DISCORD_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: discordUserId,
+        type: 1, // 1 = member overwrite
+        allow: (
+          BigInt(1 << 10) | // VIEW_CHANNEL
+          BigInt(1 << 11) | // SEND_MESSAGES
+          BigInt(1 << 16) | // READ_MESSAGE_HISTORY
+          BigInt(1 << 14) | // EMBED_LINKS
+          BigInt(1 << 15) | // ATTACH_FILES
+          BigInt(1 << 6)
+        ) // ADD_REACTIONS
+          .toString(),
+        deny: "0",
+      }),
+    },
+  )
+}
