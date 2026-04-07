@@ -11,9 +11,23 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 const page = () => {
-  const { data: batches, isPending } = trpc.admin.batches.useQuery()
+  const { data: batches, isPending, refetch } = trpc.admin.batches.useQuery()
+  const { mutate: deleteBatch } = trpc.admin.deleteBatch.useMutation({
+    onSuccess: () => {
+      refetch()
+    },
+  })
 
   return (
     <div>
@@ -37,7 +51,28 @@ const page = () => {
               <TableCell>{batch._count.students_data}</TableCell>
               <TableCell>{batch._count.students}</TableCell>
               <TableCell className="text-right">
-                <Button variant="destructive">Delete</Button>
+                <Dialog>
+                  <DialogTrigger>
+                    <Button variant="destructive">Delete</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Are you absolutely sure?</DialogTitle>
+                      <DialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete the batch and remove all associated data.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant="destructive"
+                        onClick={() => deleteBatch({ id: batch.id })}
+                      >
+                        Delete
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </TableCell>
             </TableRow>
           ))}

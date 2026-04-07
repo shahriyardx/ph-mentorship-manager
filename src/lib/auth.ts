@@ -7,6 +7,16 @@ export const getAuth = () => {
   return betterAuth({
     database: prismaAdapter(prisma, { provider: "postgresql" }),
     baseURL: env.BETTER_AUTH_URL,
+    user: {
+      additionalFields: {
+        role: {
+          type: ["user", "admin", "mentor"],
+          required: true,
+          defaultValue: "user",
+          input: false,
+        },
+      },
+    },
     socialProviders: {
       discord: {
         clientId: env.DISCORD_CLIENT_ID,

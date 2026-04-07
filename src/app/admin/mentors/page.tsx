@@ -24,6 +24,12 @@ import AddStudentsForMentorForm from "@/components/forms/add-students-for-mentor
 
 const page = () => {
   const { data: mentors, isPending } = trpc.admin.mentors.useQuery()
+  const trpcUtils = trpc.useUtils()
+  const { mutate: deleteMentor } = trpc.admin.deleteMentor.useMutation({
+    onSuccess: () => {
+      trpcUtils.admin.mentors.invalidate()
+    },
+  })
 
   return (
     <div>
@@ -75,7 +81,28 @@ const page = () => {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-                <Button variant="destructive">Delete</Button>
+                <Dialog>
+                  <DialogTrigger>
+                    <Button variant="destructive">Delete</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Are you absolutely sure?</DialogTitle>
+                      <DialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete the batch and remove all associated data.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant="destructive"
+                        onClick={() => deleteMentor({ id: mentor.id })}
+                      >
+                        Delete
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </TableCell>
             </TableRow>
           ))}

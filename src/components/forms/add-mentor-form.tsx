@@ -35,6 +35,8 @@ const AddMentorForm = () => {
     resolver: zodResolver(MentorSchema),
   })
 
+  const trpcUtils = trpc.useUtils()
+
   const { data: channels } = useDiscord({ entity: "channels" })
   const { data: users } = trpc.admin.users.useQuery()
 
@@ -45,6 +47,7 @@ const AddMentorForm = () => {
         discordChannelId: "",
       })
       toast.success("Mentor added successfully")
+      trpcUtils.admin.mentors.invalidate()
     },
     onError: (error) => {
       toast.error(error.message)

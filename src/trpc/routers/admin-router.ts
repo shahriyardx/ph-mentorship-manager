@@ -1,5 +1,6 @@
 import { AddStudentSchema, BatchSchema, MentorSchema } from "@/schema"
 import { adminProcedure, createTRPCRouter } from "../init"
+import z from "zod"
 
 export const adminRouter = createTRPCRouter({
   addBatch: adminProcedure
@@ -11,7 +12,15 @@ export const adminRouter = createTRPCRouter({
         },
       })
     }),
-
+  deleteBatch: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.batch.delete({
+        where: {
+          id: input.id,
+        },
+      })
+    }),
   batches: adminProcedure.query(async ({ ctx }) => {
     return ctx.prisma.batch.findMany({
       include: {
@@ -54,7 +63,43 @@ export const adminRouter = createTRPCRouter({
           userId: input.mentorId,
         },
       })
+
+      await ctx.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          role: "mentor",
+        },
+      })
     }),
+  deleteMentor: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const mentor = await ctx.prisma.mentor.findUnique({
+        where: {
+          id: input.id,
+        },
+      })
+      if (!mentor) {
+        throw new Error("Mentor not found")
+      }
+
+      await ctx.prisma.mentor.delete({
+        where: {
+          id: input.id,
+        },
+      })
+      await ctx.prisma.user.update({
+        where: {
+          id: mentor.userId,
+        },
+        data: {
+          role: "user",
+        },
+      })
+    }),
+
   mentors: adminProcedure.query(async ({ ctx }) => {
     const mentors = await ctx.prisma.mentor.findMany({
       include: {
