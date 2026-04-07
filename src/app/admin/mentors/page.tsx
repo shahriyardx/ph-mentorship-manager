@@ -23,7 +23,7 @@ import {
 import AddStudentsForMentorForm from "@/components/forms/add-students-for-mentor"
 
 const page = () => {
-  const { data: mentors, isPending } = trpc.admin.mentors.useQuery()
+  const { data: mentors, isPending, refetch } = trpc.admin.mentors.useQuery()
   const trpcUtils = trpc.useUtils()
   const { mutate: deleteMentor } = trpc.admin.deleteMentor.useMutation({
     onSuccess: () => {
@@ -73,7 +73,10 @@ const page = () => {
                         </p>
                       </DialogDescription>
                     </DialogHeader>
-                    <AddStudentsForMentorForm mentor={mentor} />
+                    <AddStudentsForMentorForm
+                      mentor={mentor}
+                      refetch={refetch}
+                    />
                     <DialogFooter>
                       <Button type="submit" form="add-students-for-mentor">
                         Submit

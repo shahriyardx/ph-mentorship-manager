@@ -22,11 +22,14 @@ import {
 import { Textarea } from "../ui/textarea"
 import { trpc } from "@/trpc/client"
 import { useMemo } from "react"
+import { toast } from "sonner"
 
 const AddStudentsForMentorForm = ({
   mentor,
+  refetch,
 }: {
   mentor: { id: string; name: string; email: string }
+  refetch: () => void
 }) => {
   const form = useForm({
     resolver: zodResolver(AddStudentSchema),
@@ -34,7 +37,7 @@ const AddStudentsForMentorForm = ({
       mentorId: mentor.id,
     },
   })
-  console.log(form.formState.errors)
+
   const emails = useWatch({
     control: form.control,
     name: "emails",
@@ -47,7 +50,16 @@ const AddStudentsForMentorForm = ({
   }, [emails])
 
   const { data: batches } = trpc.admin.batches.useQuery()
-  const { mutate: addStudents } = trpc.admin.addStudents.useMutation()
+  const { mutate: addStudents } = trpc.admin.addStudents.useMutation({
+    onSuccess: () => {
+      form.reset({
+        batchId: "",
+        emails: "",
+      })
+      toast.success("Students added successfully")
+      refetch()
+    },
+  })
 
   return (
     <form
