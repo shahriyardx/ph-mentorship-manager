@@ -16,8 +16,8 @@ const page = () => {
 
       <div className="flex justify-center items-center flex-col gap-5">
         <GraduationCap size={40} className="mt-10 text-purple-500" />
-        <h1 className="text-xl sm:text-2xl md:text-4xl font-bold mt-3 text-center">
-          Welcome to the Mentorship Program.
+        <h1 className="text-4xl  md:text-5xl font-bold mt-3 text-center">
+          Mentorship Program
         </h1>
         <p className="text-muted-foreground max-w-[60ch] text-center text-sm sm:text-base">
           You are assigned to a mentor for personal mentorship. You will receive
