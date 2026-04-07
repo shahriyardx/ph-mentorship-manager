@@ -23,6 +23,9 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  student Student?
+  mentor  Mentor?
+
   @@unique([email])
   @@map("user")
 }
@@ -76,7 +79,7 @@ model Verification {
 }
 
 model Batch {
-  id   String @id
+  id   String @id @default(cuid())
   name String
 
   createdAt DateTime  @default(now())
@@ -87,29 +90,48 @@ model Batch {
 }
 
 model Mentor {
-  id               String    @id
-  name             String
+  id               String    @id @default(cuid())
   discordChannelId String
   students         Student[]
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String    @unique
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  studentsDatas StudentsData[]
 
   @@map("mentor")
 }
 
 model Student {
-  id       String @id
-  name     String
-  email    String
-  phone    String
-  mentor   Mentor @relation(fields: [mentorId], references: [id])
+  id    String @id @default(cuid())
+  name  String
+  email String
+  phone String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mentor Mentor @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  batch  Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  userId   String @unique
   mentorId String
-  batch    Batch  @relation(fields: [batchId], references: [id])
   batchId  String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("student")
+}
+
+model StudentsData {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  mentor    Mentor   @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  mentorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("students_data")
 }

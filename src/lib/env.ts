@@ -1,5 +1,5 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { createEnv } from "@t3-oss/env-nextjs"
+import { z } from "zod"
 
 export const env = createEnv({
   server: {
@@ -9,6 +9,7 @@ export const env = createEnv({
     DISCORD_CLIENT_ID: z.string(),
     DICSORD_CLIENT_SECRET: z.string(),
     DISCORD_TOKEN: z.string(),
+    SERVER_ID: z.string(),
   },
   client: {},
   runtimeEnv: {
@@ -18,5 +19,6 @@ export const env = createEnv({
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     DICSORD_CLIENT_SECRET: process.env.DICSORD_CLIENT_SECRET,
     DISCORD_TOKEN: process.env.DISCORD_TOKEN,
+    SERVER_ID: process.env.SERVER_ID,
   },
-});
+})

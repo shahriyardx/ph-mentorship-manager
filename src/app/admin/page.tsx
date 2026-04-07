@@ -1,11 +1,13 @@
-import Header from "@/components/header"
-import { Separator } from "@/components/ui/separator"
+import AddBatchForm from "@/components/forms/add-batch-form"
+import AddMentorForm from "@/components/forms/add-mentor-form"
 
 const page = () => {
   return (
     <div>
-      <Header />
-      <Separator className="my-5" />
+      <div className="space-y-5">
+        <AddBatchForm />
+        <AddMentorForm />
+      </div>
     </div>
   )
 }

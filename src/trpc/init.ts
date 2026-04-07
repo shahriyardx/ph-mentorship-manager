@@ -1,4 +1,6 @@
-import { auth } from "@/lib/auth"
+import type { PrismaClient } from "@/generated/prisma/client"
+import { getAuth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { initTRPC, TRPCError } from "@trpc/server"
 import type { Session, User } from "better-auth"
 import SuperJSON from "superjson"
@@ -8,6 +10,7 @@ export type TRPCContext = {
     user: User
     session: Session
   } | null
+  prisma: PrismaClient
 }
 
 export const createTRPCContext = async ({
@@ -15,12 +18,13 @@ export const createTRPCContext = async ({
 }: {
   req: Request
 }): Promise<TRPCContext> => {
-  const authSession = await auth.api.getSession({
+  const authSession = await getAuth().api.getSession({
     headers: req.headers,
   })
 
   return {
     session: authSession,
+    prisma: prisma,
   }
 }
 
@@ -39,6 +43,7 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
     ctx: {
       ...ctx,
       session: ctx.session,
+      prisma: prisma,
     },
   })
 })
@@ -47,3 +52,4 @@ export const createTRPCRouter = t.router
 export const createCallerFactory = t.createCallerFactory
 export const publicProcedure = t.procedure
 export const protectedProcedure = t.procedure.use(isAuthenticated)
+export const adminProcedure = t.procedure.use(isAuthenticated)

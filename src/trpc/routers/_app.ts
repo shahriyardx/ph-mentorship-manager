@@ -1,8 +1,10 @@
 import { createTRPCRouter } from "../init"
-import { exampleRouter } from "./example.router"
+import { adminRouter } from "./admin-router"
+import { discordRouter } from "./discord-router"
 
 export const appRouter = createTRPCRouter({
-  example: exampleRouter,
+  admin: adminRouter,
+  discord: discordRouter,
 })
 
 export type AppRouter = typeof appRouter
