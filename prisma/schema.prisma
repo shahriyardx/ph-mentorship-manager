@@ -82,9 +82,10 @@ model Batch {
   id   String @id @default(cuid())
   name String
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  students  Student[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  students      Student[]
+  students_data StudentsData[]
 
   @@map("batch")
 }
@@ -105,9 +106,7 @@ model Mentor {
 
 model Student {
   id    String @id @default(cuid())
-  name  String
   email String
-  phone String
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   mentor Mentor @relation(fields: [mentorId], references: [id], onDelete: Cascade)
@@ -124,14 +123,17 @@ model Student {
 }
 
 model StudentsData {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String
-  mentor    Mentor   @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  mentorId  String
+  id       String @id @default(cuid())
+  email    String
+  mentorId String
+  batchId  String
+
+  mentor Mentor @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  batch  Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([email, batchId])
   @@map("students_data")
 }

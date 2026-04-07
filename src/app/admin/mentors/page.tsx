@@ -11,6 +11,16 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import AddStudentsForMentorForm from "@/components/forms/add-students-for-mentor"
 
 const page = () => {
   const { data: mentors, isPending } = trpc.admin.mentors.useQuery()
@@ -26,7 +36,9 @@ const page = () => {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>Assgined Students</TableHead>
+            <TableHead>Joined Students</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -34,7 +46,35 @@ const page = () => {
             <TableRow key={mentor.id}>
               <TableCell>{mentor.name}</TableCell>
               <TableCell>{mentor.email}</TableCell>
-              <TableCell className="text-right">
+              <TableCell>{mentor._count.studentsDatas}</TableCell>
+              <TableCell>{mentor._count.students}</TableCell>
+              <TableCell className="flex gap-2">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>Add Students</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Students</DialogTitle>
+                      <DialogDescription>
+                        <p>
+                          <span className="font-bold">Mentor: </span>{" "}
+                          {mentor.name}
+                        </p>
+                        <p>
+                          <span className="font-bold">Email: </span>
+                          {mentor.email}
+                        </p>
+                      </DialogDescription>
+                    </DialogHeader>
+                    <AddStudentsForMentorForm mentor={mentor} />
+                    <DialogFooter>
+                      <Button type="submit" form="add-students-for-mentor">
+                        Submit
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <Button variant="destructive">Delete</Button>
               </TableCell>
             </TableRow>

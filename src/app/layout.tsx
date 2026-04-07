@@ -30,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
         <TRPCProvider>
-          <div className="max-w-5xl mx-auto p-5">{children}</div>
+          <div className="max-w-6xl mx-auto p-5">{children}</div>
         </TRPCProvider>
         <Toaster />
       </body>

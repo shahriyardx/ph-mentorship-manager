@@ -1,4 +1,4 @@
-import { BatchSchema, MentorSchema } from "@/schema"
+import { AddStudentSchema, BatchSchema, MentorSchema } from "@/schema"
 import { adminProcedure, createTRPCRouter } from "../init"
 
 export const adminRouter = createTRPCRouter({
@@ -18,6 +18,7 @@ export const adminRouter = createTRPCRouter({
         _count: {
           select: {
             students: true,
+            students_data: true,
           },
         },
       },
@@ -56,8 +57,12 @@ export const adminRouter = createTRPCRouter({
     }),
   mentors: adminProcedure.query(async ({ ctx }) => {
     const mentors = await ctx.prisma.mentor.findMany({
-      include: { user: true },
+      include: {
+        user: true,
+        _count: { select: { studentsDatas: true, students: true } },
+      },
     })
+
     const mentorWithUser = mentors.map((mentor) => ({
       ...mentor,
       name: mentor.user.name,
@@ -65,4 +70,27 @@ export const adminRouter = createTRPCRouter({
     }))
     return mentorWithUser
   }),
+  addStudents: adminProcedure
+    .input(AddStudentSchema)
+    .mutation(async ({ input, ctx }) => {
+      const studentEmails =
+        input.emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) ??
+        []
+
+      console.log(studentEmails)
+
+      for (const email of studentEmails) {
+        try {
+          await ctx.prisma.studentsData.create({
+            data: {
+              email,
+              batchId: input.batchId,
+              mentorId: input.mentorId,
+            },
+          })
+        } catch {
+          // console.error(error)
+        }
+      }
+    }),
 })

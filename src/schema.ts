@@ -8,3 +8,9 @@ export const MentorSchema = z.object({
   discordChannelId: z.string().min(1),
   mentorId: z.string().min(1),
 })
+
+export const AddStudentSchema = z.object({
+  mentorId: z.string().min(1),
+  batchId: z.string().min(1),
+  emails: z.string().min(1),
+})

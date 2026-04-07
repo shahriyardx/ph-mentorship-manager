@@ -11,7 +11,7 @@ export default function AdminLayout({
     <div>
       <Header />
       <Separator className="my-5" />
-      <div className="grid grid-cols-4 gap-5">
+      <div className="grid grid-cols-5 gap-5">
         <aside className="col-span-1 border-r">
           <ul className="flex flex-col gap-2">
             <li>
@@ -28,7 +28,7 @@ export default function AdminLayout({
             </li>
           </ul>
         </aside>
-        <main className="col-span-3">{children}</main>
+        <main className="col-span-4">{children}</main>
       </div>
     </div>
   )

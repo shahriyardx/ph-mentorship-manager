@@ -25,7 +25,8 @@ const page = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Students</TableHead>
+            <TableHead>All Students</TableHead>
+            <TableHead>Joined Students</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -33,6 +34,7 @@ const page = () => {
           {batches?.map((batch) => (
             <TableRow key={batch.id}>
               <TableCell>{batch.name}</TableCell>
+              <TableCell>{batch._count.students_data}</TableCell>
               <TableCell>{batch._count.students}</TableCell>
               <TableCell className="text-right">
                 <Button variant="destructive">Delete</Button>
