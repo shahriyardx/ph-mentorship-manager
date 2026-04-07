@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client"
 
 export const SignIn = () => {
   return (
-    <div className="mt-5 border-2 rounded-md p-5">
+    <div className="mt-5 border-2 rounded-md p-10 text-center">
       <h1 className="text-2xl font-bold">Sign in to continue</h1>
       <p className="mt-2 text-muted-foreground">
         Before you can access the mentorship program, please sign in with your
@@ -23,17 +23,14 @@ export const SignIn = () => {
         .
       </p>
       <Button
-        variant="default"
-        size="lg"
-        className="mt-5"
         onClick={() =>
           authClient.signIn.social({
             provider: "discord",
             callbackURL: "/",
           })
         }
+        className="p-6 rounded-full bg-indigo-500 text-white cursor-pointer hover:bg-indigo-600 w-full mt-5"
       >
-        <Image src="/discord.svg" alt="Sign In" width={14} height={14} />
         Sign In with Discord
       </Button>
     </div>

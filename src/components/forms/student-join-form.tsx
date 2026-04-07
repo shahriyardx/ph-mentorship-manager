@@ -1,13 +1,7 @@
 "use client"
 
 import { Controller, useForm } from "react-hook-form"
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
+import { Field, FieldError, FieldGroup } from "@/components/ui/field"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { StudentJoinSchema } from "@/schema"
 import { Input } from "../ui/input"
@@ -15,6 +9,7 @@ import { Button } from "../ui/button"
 import { trpc } from "@/trpc/client"
 import Link from "next/link"
 import { useMemo } from "react"
+import Image from "next/image"
 
 const StudentJoinForm = () => {
   const form = useForm({
@@ -37,19 +32,36 @@ const StudentJoinForm = () => {
   return (
     <div>
       {student ? (
-        <div className="p-10 rounded-md border-2 text-center">
-          <h2 className="text-2xl font-bold">Mentorship Program</h2>
+        <div className="p-10 rounded-md border-2 flex items-center gap-5">
           <div>
-            <p className="mt-2">
-              Your mentor is {student.mentor?.user?.name}.{" "}
-              <Link
-                href={`https://discord.com/channels/${studentInfo?.serverId}/${student.mentor?.discordChannelId}`}
-                className="text-indigo-400 underline underline-offset-2"
+            <h2 className="text-2xl font-bold">Mentorship Program</h2>
+            <div>
+              <p className="mt-2 text-muted-foreground">
+                Your mentor is {student.mentor?.user?.name}. Click the button
+                below to view your mentor's discord channel
+              </p>
+
+              <Button
+                className="p-6 mt-5 bg-purple-500 hover:bg-purple-600 text-white"
+                asChild
               >
-                Click here
-              </Link>{" "}
-              to view your mentor's discord channel
-            </p>
+                <Link
+                  href={`https://discord.com/channels/${studentInfo?.serverId}/${student.mentor?.discordChannelId}`}
+                >
+                  View Channel
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <Image
+              src={student.mentor?.user?.image ?? "/placeholder.svg"}
+              alt={student.mentor?.user?.name ?? "Mentor"}
+              width={250}
+              height={250}
+              className="ring-2 ring-purple-500 ring-offset-4 ring-offset-transparent rounded-md"
+            />
           </div>
         </div>
       ) : (
