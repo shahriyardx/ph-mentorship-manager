@@ -7,7 +7,7 @@ import SuperJSON from "superjson"
 
 export type TRPCContext = {
   session: {
-    user: User
+    user: User & { role: "admin" | "user" | "mentor" }
     session: Session
   } | null
   prisma: PrismaClient
@@ -48,8 +48,35 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
   })
 })
 
+const isRole = (role: ("admin" | "mentor" | "user")[]) =>
+  t.middleware(({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You are not authenticated",
+      })
+    }
+    if (!role.includes(ctx.session.user.role)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not authorized to access this resource",
+      })
+    }
+    return next({
+      ctx: {
+        ...ctx,
+        session: ctx.session,
+        prisma: prisma,
+      },
+    })
+  })
+
 export const createTRPCRouter = t.router
 export const createCallerFactory = t.createCallerFactory
 export const publicProcedure = t.procedure
 export const protectedProcedure = t.procedure.use(isAuthenticated)
-export const adminProcedure = t.procedure.use(isAuthenticated)
+export const adminProcedure = t.procedure.use(isRole(["admin"]))
+export const mentorProcedure = t.procedure.use(isRole(["mentor"]))
+export const adminOrMentorProcedure = t.procedure.use(
+  isRole(["admin", "mentor"]),
+)

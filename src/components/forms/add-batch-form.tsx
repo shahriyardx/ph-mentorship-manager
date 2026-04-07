@@ -22,12 +22,15 @@ const AddBatchForm = () => {
     resolver: zodResolver(BatchSchema),
   })
 
+  const trpcUtils = trpc.useUtils()
+
   const { mutate: addBatch } = trpc.admin.addBatch.useMutation({
     onSuccess: () => {
       form.reset({
         name: "",
       })
       toast.success("Batch added successfully")
+      trpcUtils.admin.batches.invalidate()
     },
     onError: (error) => {
       toast.error(error.message)

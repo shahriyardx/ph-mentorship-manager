@@ -1,5 +1,9 @@
 import { AddStudentSchema, BatchSchema, MentorSchema } from "@/schema"
-import { adminProcedure, createTRPCRouter } from "../init"
+import {
+  adminOrMentorProcedure,
+  adminProcedure,
+  createTRPCRouter,
+} from "../init"
 import z from "zod"
 
 export const adminRouter = createTRPCRouter({
@@ -21,7 +25,7 @@ export const adminRouter = createTRPCRouter({
         },
       })
     }),
-  batches: adminProcedure.query(async ({ ctx }) => {
+  batches: adminOrMentorProcedure.query(async ({ ctx }) => {
     return ctx.prisma.batch.findMany({
       include: {
         _count: {
