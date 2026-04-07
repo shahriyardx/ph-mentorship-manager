@@ -4,6 +4,7 @@ import Header from "@/components/header"
 import { SidebarLink } from "@/components/sidebar-link"
 import { Separator } from "@/components/ui/separator"
 import { trpc } from "@/trpc/client"
+import Link from "next/link"
 
 export default function AdminLayout({
   children,
@@ -23,9 +24,9 @@ export default function AdminLayout({
               <SidebarLink href="/mentor">Dashboard</SidebarLink>
             </li>
             <li>
-              <SidebarLink href={`/mentor/students/${batches?.[0]?.id}`}>
+              <Link href={`/mentor/students/${batches?.[0]?.id}`}>
                 Students
-              </SidebarLink>
+              </Link>
               <div className="ml-3 px-3 border-l-2 mt-2">
                 {batches?.map((batch) => (
                   <SidebarLink

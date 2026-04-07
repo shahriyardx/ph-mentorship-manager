@@ -20,10 +20,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
 
 const page = () => {
   const { data: batches, isPending, refetch } = trpc.admin.batches.useQuery()
   const { mutate: deleteBatch } = trpc.admin.deleteBatch.useMutation({
+    onSuccess: () => {
+      refetch()
+    },
+  })
+  const { mutate: setCurrentBatch } = trpc.admin.setCurrentBatch.useMutation({
     onSuccess: () => {
       refetch()
     },
@@ -50,7 +56,15 @@ const page = () => {
               <TableCell>{batch.name}</TableCell>
               <TableCell>{batch._count.students_data}</TableCell>
               <TableCell>{batch._count.students}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right space-x-1">
+                {batch.isCurrent ? null : (
+                  <Button
+                    variant={"outline"}
+                    onClick={() => setCurrentBatch({ id: batch.id })}
+                  >
+                    Set as Current
+                  </Button>
+                )}
                 <Dialog>
                   <DialogTrigger>
                     <Button variant="destructive">Delete</Button>

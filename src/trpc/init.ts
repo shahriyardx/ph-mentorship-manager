@@ -76,7 +76,6 @@ export const createCallerFactory = t.createCallerFactory
 export const publicProcedure = t.procedure
 export const protectedProcedure = t.procedure.use(isAuthenticated)
 export const adminProcedure = t.procedure.use(isRole(["admin"]))
-export const mentorProcedure = t.procedure.use(isRole(["mentor"]))
 export const adminOrMentorProcedure = t.procedure.use(
   isRole(["admin", "mentor"]),
 )

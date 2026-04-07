@@ -1,8 +1,8 @@
-import { createTRPCRouter, mentorProcedure } from "../init"
+import { createTRPCRouter, adminOrMentorProcedure } from "../init"
 import z from "zod"
 
 export const mentorRouter = createTRPCRouter({
-  students: mentorProcedure
+  students: adminOrMentorProcedure
     .input(
       z.object({
         batchId: z.string(),

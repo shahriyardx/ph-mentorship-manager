@@ -14,3 +14,7 @@ export const AddStudentSchema = z.object({
   batchId: z.string().min(1),
   emails: z.string().min(1),
 })
+
+export const StudentJoinSchema = z.object({
+  email: z.email(),
+})

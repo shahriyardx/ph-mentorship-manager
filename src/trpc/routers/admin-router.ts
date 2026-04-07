@@ -10,11 +10,49 @@ export const adminRouter = createTRPCRouter({
   addBatch: adminProcedure
     .input(BatchSchema)
     .mutation(async ({ input, ctx }) => {
-      await ctx.prisma.batch.create({
+      const batch = await ctx.prisma.batch.create({
         data: {
           name: input.name,
         },
       })
+      const settings = await ctx.prisma.settings.findFirst()
+      if (!settings) {
+        await ctx.prisma.settings.create({
+          data: {
+            currentBatchId: batch.id,
+          },
+        })
+      } else {
+        await ctx.prisma.settings.update({
+          where: {
+            id: settings.id,
+          },
+          data: {
+            currentBatchId: batch.id,
+          },
+        })
+      }
+    }),
+  setCurrentBatch: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.prisma.settings.findFirst()
+      if (!settings) {
+        await ctx.prisma.settings.create({
+          data: {
+            currentBatchId: input.id,
+          },
+        })
+      } else {
+        await ctx.prisma.settings.update({
+          where: {
+            id: settings.id,
+          },
+          data: {
+            currentBatchId: input.id,
+          },
+        })
+      }
     }),
   deleteBatch: adminProcedure
     .input(z.object({ id: z.string() }))
@@ -26,7 +64,10 @@ export const adminRouter = createTRPCRouter({
       })
     }),
   batches: adminOrMentorProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.batch.findMany({
+    const settings = await ctx.prisma.settings.findFirst()
+    const currentBatchId = settings?.currentBatchId
+
+    const batches = await ctx.prisma.batch.findMany({
       include: {
         _count: {
           select: {
@@ -36,6 +77,11 @@ export const adminRouter = createTRPCRouter({
         },
       },
     })
+
+    return batches.map((batch) => ({
+      ...batch,
+      isCurrent: batch.id === currentBatchId,
+    }))
   }),
   users: adminProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany()

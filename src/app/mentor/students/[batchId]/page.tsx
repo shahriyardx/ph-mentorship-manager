@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -28,7 +27,7 @@ const page = () => {
 
   return (
     <div>
-      <h1>Students</h1>
+      <h1 className="text-2xl font-bold mb-3">Students</h1>
       <Tabs defaultValue="assigned">
         <TabsList>
           <TabsTrigger value="assigned">Assigned</TabsTrigger>
@@ -39,6 +38,7 @@ const page = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Email</TableHead>
+                <TableHead>Status (joined/not)</TableHead>
                 <TableHead>Assigned At</TableHead>
               </TableRow>
             </TableHeader>
@@ -46,6 +46,13 @@ const page = () => {
               {assignedStudents.map((student) => (
                 <TableRow key={student.id}>
                   <TableCell>{student.email}</TableCell>
+                  <TableCell>
+                    {joinedStudents.find((s) => s.email === student.email) ? (
+                      <span className="text-green-400">Joined</span>
+                    ) : (
+                      <span className="text-destructive">Not Joined</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {student.createdAt.toLocaleDateString()}
                   </TableCell>

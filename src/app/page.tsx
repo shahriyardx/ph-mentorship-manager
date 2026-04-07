@@ -1,4 +1,9 @@
-import { ShowIfNotAuthenticated, SignIn } from "@/components/auth-components"
+import {
+  ShowIfAuthenticated,
+  ShowIfNotAuthenticated,
+  SignIn,
+} from "@/components/auth-components"
+import StudentJoinForm from "@/components/forms/student-join-form"
 import Header from "@/components/header"
 import { Separator } from "@/components/ui/separator"
 
@@ -16,6 +21,10 @@ const page = () => {
       <ShowIfNotAuthenticated>
         <SignIn />
       </ShowIfNotAuthenticated>
+
+      <ShowIfAuthenticated>
+        <StudentJoinForm />
+      </ShowIfAuthenticated>
     </div>
   )
 }

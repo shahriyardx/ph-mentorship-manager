@@ -145,3 +145,13 @@ model StudentsData {
   @@unique([email, batchId])
   @@map("students_data")
 }
+
+model Settings {
+  id             String @id @default(cuid())
+  currentBatchId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
