@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 
 const page = () => {
   const { batchId } = useParams()
-  const { data } = trpc.mentor.students.useQuery({
+  const { data, isPending } = trpc.mentor.students.useQuery({
     batchId: batchId as string,
   })
 
@@ -28,6 +28,8 @@ const page = () => {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-3">Students</h1>
+      {isPending && <p className="my-3">Loading...</p>}
+
       <Tabs defaultValue="assigned">
         <TabsList>
           <TabsTrigger value="assigned">Assigned</TabsTrigger>

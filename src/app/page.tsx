@@ -6,25 +6,34 @@ import {
 import StudentJoinForm from "@/components/forms/student-join-form"
 import Header from "@/components/header"
 import { Separator } from "@/components/ui/separator"
+import { GraduationCap } from "lucide-react"
 
 const page = () => {
   return (
     <div>
       <Header />
       <Separator className="my-5" />
-      <p className="mt-3 text-muted-foreground">
-        Welcome to the Mentorship Program. You are assigned to a mentor for
-        personal mentorship. You will receive guidance and support from your
-        mentor.
-      </p>
 
-      <ShowIfNotAuthenticated>
-        <SignIn />
-      </ShowIfNotAuthenticated>
+      <div className="flex justify-center items-center flex-col gap-5">
+        <GraduationCap size={40} className="mt-10 text-purple-500" />
+        <h1 className="text-4xl font-bold mt-3">
+          Welcome to the Mentorship Program.
+        </h1>
+        <p className="text-muted-foreground max-w-[60ch] text-center">
+          You are assigned to a mentor for personal mentorship. You will receive
+          guidance and support from your mentor.
+        </p>
+      </div>
 
-      <ShowIfAuthenticated>
-        <StudentJoinForm />
-      </ShowIfAuthenticated>
+      <div className="max-w-2xl mx-auto mt-10">
+        <ShowIfNotAuthenticated>
+          <SignIn />
+        </ShowIfNotAuthenticated>
+
+        <ShowIfAuthenticated>
+          <StudentJoinForm />
+        </ShowIfAuthenticated>
+      </div>
     </div>
   )
 }

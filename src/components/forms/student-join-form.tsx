@@ -3,6 +3,7 @@
 import { Controller, useForm } from "react-hook-form"
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -36,7 +37,7 @@ const StudentJoinForm = () => {
   return (
     <div>
       {student ? (
-        <div className="p-5 rounded-md border-2 mt-5">
+        <div className="p-10 rounded-md border-2 text-center">
           <h2 className="text-2xl font-bold">Mentorship Program</h2>
           <div>
             <p className="mt-2">
@@ -52,14 +53,14 @@ const StudentJoinForm = () => {
           </div>
         </div>
       ) : (
-        <div className="p-5 rounded-md border-2 mt-5">
+        <div className="p-10 rounded-md border-2 text-center">
           <h2 className="text-2xl font-bold">Join Mentorship Program</h2>
           <p className="mt-2 text-muted-foreground">
-            Enter your email below to join the mentorship program.
+            Enter your course email below to join the mentorship program.
           </p>
           <form
             onSubmit={form.handleSubmit((values) => joinMentorship(values))}
-            className="mt-3"
+            className="mt-5"
           >
             <FieldGroup>
               <Controller
@@ -67,23 +68,29 @@ const StudentJoinForm = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
                       value={field.value}
                       onChange={field.onChange}
-                      placeholder="Email"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Your course email"
+                      className="px-6 py-6"
                     />
 
                     {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+                      <FieldError
+                        className="text-center"
+                        errors={[fieldState.error]}
+                      />
                     )}
                   </Field>
                 )}
               />
 
-              <Button>Join Now</Button>
+              <Button className="p-6 rounded-full bg-purple-500 text-white cursor-pointer hover:bg-purple-600">
+                Join Now
+              </Button>
             </FieldGroup>
           </form>
         </div>

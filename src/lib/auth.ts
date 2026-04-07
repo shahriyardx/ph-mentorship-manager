@@ -26,6 +26,7 @@ export const getAuth = () => {
     },
   })
 }
+export type Auth = ReturnType<typeof getAuth>
 
 export const addUserToGuild = async (
   accessToken: string,
