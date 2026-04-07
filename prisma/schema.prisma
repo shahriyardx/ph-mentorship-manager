@@ -74,3 +74,42 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+model Batch {
+  id   String @id
+  name String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  students  Student[]
+
+  @@map("batch")
+}
+
+model Mentor {
+  id               String    @id
+  name             String
+  discordChannelId String
+  students         Student[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("mentor")
+}
+
+model Student {
+  id       String @id
+  name     String
+  email    String
+  phone    String
+  mentor   Mentor @relation(fields: [mentorId], references: [id])
+  mentorId String
+  batch    Batch  @relation(fields: [batchId], references: [id])
+  batchId  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("student")
+}

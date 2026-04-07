@@ -14,6 +14,7 @@ const Header = () => {
           height={30}
           className="rounded-md"
         />
+
         <h1 className="text-2xl font-bold">Mentorsip Program</h1>
         <ShowIfAuthenticated>
           <SignOut className="ml-auto" />

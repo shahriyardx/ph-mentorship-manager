@@ -28,7 +28,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
-        <TRPCProvider>{children}</TRPCProvider>
+        <TRPCProvider>
+          <div className="max-w-5xl mx-auto p-5">{children}</div>
+        </TRPCProvider>
       </body>
     </html>
   )
