@@ -11,9 +11,6 @@ import { GraduationCap } from "lucide-react"
 const page = () => {
   return (
     <div>
-      <Header />
-      <Separator className="my-5" />
-
       <div className="flex justify-center items-center flex-col gap-5">
         <GraduationCap size={40} className="mt-10 text-purple-500" />
         <h1 className="text-4xl  md:text-5xl font-bold mt-3 text-center">

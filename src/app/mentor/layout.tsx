@@ -14,34 +14,28 @@ export default function AdminLayout({
   const { data: batches } = trpc.admin.batches.useQuery()
 
   return (
-    <div>
-      <Header />
-      <Separator className="my-5" />
-      <div className="grid grid-cols-5 gap-5">
-        <aside className="col-span-1 border-r">
-          <ul className="flex flex-col gap-2">
-            <li>
-              <SidebarLink href="/mentor">Dashboard</SidebarLink>
-            </li>
-            <li>
-              <Link href={`/mentor/students/${batches?.[0]?.id}`}>
-                Students
-              </Link>
-              <div className="ml-3 px-3 border-l-2 mt-2">
-                {batches?.map((batch) => (
-                  <SidebarLink
-                    key={batch.id}
-                    href={`/mentor/students/${batch.id}`}
-                  >
-                    {batch.name}
-                  </SidebarLink>
-                ))}
-              </div>
-            </li>
-          </ul>
-        </aside>
-        <main className="col-span-4">{children}</main>
-      </div>
+    <div className="grid grid-cols-5 gap-5">
+      <aside className="col-span-1 border-r">
+        <ul className="flex flex-col gap-2">
+          <li>
+            <SidebarLink href="/mentor">Dashboard</SidebarLink>
+          </li>
+          <li>
+            <Link href={`/mentor/students/${batches?.[0]?.id}`}>Students</Link>
+            <div className="ml-3 px-3 border-l-2 mt-2">
+              {batches?.map((batch) => (
+                <SidebarLink
+                  key={batch.id}
+                  href={`/mentor/students/${batch.id}`}
+                >
+                  {batch.name}
+                </SidebarLink>
+              ))}
+            </div>
+          </li>
+        </ul>
+      </aside>
+      <main className="col-span-4">{children}</main>
     </div>
   )
 }
