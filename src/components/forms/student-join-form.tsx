@@ -32,11 +32,11 @@ const StudentJoinForm = () => {
   return (
     <div>
       {student ? (
-        <div className="p-10 rounded-md border-2 flex items-center gap-5">
-          <div>
+        <div className="p-10 rounded-md border-2 flex flex-col-reverse sm:flex-row items-center gap-5">
+          <div className="text-center sm:text-left">
             <h2 className="text-2xl font-bold">Mentorship Program</h2>
             <div>
-              <p className="mt-2 text-muted-foreground">
+              <p className="mt-2 text-muted-foreground text-sm sm:text-base">
                 Your mentor is {student.mentor?.user?.name}. Click the button
                 below to view your mentor's discord channel
               </p>
@@ -66,8 +66,10 @@ const StudentJoinForm = () => {
         </div>
       ) : (
         <div className="p-10 rounded-md border-2 text-center">
-          <h2 className="text-2xl font-bold">Join Mentorship Program</h2>
-          <p className="mt-2 text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold">
+            Join Mentorship Program
+          </h2>
+          <p className="mt-2 text-muted-foreground text-sm sm:text-base">
             Enter your course email below to join the mentorship program.
           </p>
           <form

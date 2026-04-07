@@ -7,8 +7,8 @@ import { authClient } from "@/lib/auth-client"
 export const SignIn = () => {
   return (
     <div className="mt-5 border-2 rounded-md p-10 text-center">
-      <h1 className="text-2xl font-bold">Sign in to continue</h1>
-      <p className="mt-2 text-muted-foreground">
+      <h1 className="text-xl sm:text-2xl font-bold">Sign in to continue</h1>
+      <p className="mt-2 text-muted-foreground text-sm sm:text-base">
         Before you can access the mentorship program, please sign in with your
         Discord account. If you don't have an account, you can create one for
         free from{" "}

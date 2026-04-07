@@ -20,7 +20,7 @@ const Header = () => {
           className="rounded-md"
         />
 
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-xl sm:text-2xl font-bold">
           <Link href="/">Mentorship Program</Link>
         </h1>
         {data && (
