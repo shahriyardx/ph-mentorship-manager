@@ -23,8 +23,9 @@ import {
 import AddStudentsForMentorForm from "@/components/forms/add-students-for-mentor"
 
 const page = () => {
-  const { data: mentors, isPending, refetch } = trpc.admin.mentors.useQuery()
   const trpcUtils = trpc.useUtils()
+
+  const { data: mentors, isPending, refetch } = trpc.admin.mentors.useQuery()
   const { mutate: deleteMentor } = trpc.admin.deleteMentor.useMutation({
     onSuccess: () => {
       trpcUtils.admin.mentors.invalidate()

@@ -151,10 +151,26 @@ export const adminRouter = createTRPCRouter({
     }),
 
   mentors: adminProcedure.query(async ({ ctx }) => {
+    const settings = await ctx.prisma.settings.findFirst()
+    const batchId = settings ? settings.currentBatchId : ""
+
     const mentors = await ctx.prisma.mentor.findMany({
       include: {
         user: true,
-        _count: { select: { studentsDatas: true, students: true } },
+        _count: {
+          select: {
+            studentsDatas: {
+              where: {
+                batchId: batchId,
+              },
+            },
+            students: {
+              where: {
+                batchId: batchId,
+              },
+            },
+          },
+        },
       },
     })
 
