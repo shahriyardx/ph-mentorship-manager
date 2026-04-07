@@ -1,18 +1,22 @@
-import ExampleComponent from "@/components/example"
-import Uploader from "@/components/uploader"
+import { ShowIfNotAuthenticated, SignIn } from "@/components/auth-components"
+import Header from "@/components/header"
+import { Separator } from "@/components/ui/separator"
 
 const page = () => {
   return (
     <div className="px-10 pt-10">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold">Fullstack Template</h1>
-        <p className="mb-5">
-          This is a nextjs template that uses tailwind, shadcn-ui, better-auth,
-          prisma, and trpc
+        <Header />
+        <Separator className="my-5" />
+        <p className="mt-3 text-muted-foreground">
+          Welcome to the Mentorship Program. You are assigned to a mentor for
+          personal mentorship. You will receive guidance and support from your
+          mentor.
         </p>
 
-        <ExampleComponent />
-        <Uploader />
+        <ShowIfNotAuthenticated>
+          <SignIn />
+        </ShowIfNotAuthenticated>
       </div>
     </div>
   )
