@@ -1,6 +1,6 @@
 "use client"
 
-import { ShowIfNotAuthenticated, SignOut } from "@/components/auth-components"
+import { ShowIfNotAuthenticated } from "@/components/auth-components"
 import { authClient } from "@/lib/auth-client"
 import Image from "next/image"
 import { Button } from "./ui/button"
