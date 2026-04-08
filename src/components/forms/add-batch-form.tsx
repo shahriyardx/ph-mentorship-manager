@@ -16,6 +16,7 @@ import { BatchSchema } from "@/schema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { trpc } from "@/trpc/client"
 import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
 const AddBatchForm = () => {
   const form = useForm({
@@ -24,18 +25,19 @@ const AddBatchForm = () => {
 
   const trpcUtils = trpc.useUtils()
 
-  const { mutate: addBatch } = trpc.admin.addBatch.useMutation({
-    onSuccess: () => {
-      form.reset({
-        name: "",
-      })
-      toast.success("Batch added successfully")
-      trpcUtils.admin.batches.invalidate()
-    },
-    onError: (error) => {
-      toast.error(error.message)
-    },
-  })
+  const { mutate: addBatch, isPending: isAddingBatch } =
+    trpc.admin.addBatch.useMutation({
+      onSuccess: () => {
+        form.reset({
+          name: "",
+        })
+        toast.success("Batch added successfully")
+        trpcUtils.admin.batches.invalidate()
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    })
 
   return (
     <Card>
@@ -74,7 +76,8 @@ const AddBatchForm = () => {
         </form>
       </CardContent>
       <CardFooter>
-        <Button type="submit" form="add-batch-form">
+        <Button type="submit" form="add-batch-form" disabled={isAddingBatch}>
+          {isAddingBatch && <Loader2 className="animate-spin" />}
           Submit
         </Button>
       </CardFooter>
