@@ -10,7 +10,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
-import { Box, ChevronRightIcon } from "lucide-react"
+import { Box, ChevronRightIcon, UsersRound } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -41,6 +41,7 @@ export function NavMentor() {
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton>
+                <UsersRound />
                 <span>Students</span>
                 <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
               </SidebarMenuButton>
