@@ -2,18 +2,32 @@
 
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
+import { trpc } from "@/trpc/client"
 import { Shield } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import { toast } from "sonner"
 
 const page = () => {
   const router = useRouter()
   const { data } = authClient.useSession()
+  const { mutate: applyForMentor } = trpc.mentor.applyForMentor.useMutation({
+    onSuccess: () => {
+      toast.success("Mentorship application submitted successfully")
+    },
+  })
+
   useEffect(() => {
-    if (data?.user.role === "mentor") {
+    if (!data) return
+
+    if (data.user.role === "mentor") {
       router.push("/mentor")
     }
-  }, [data, router])
+
+    // if (data.user.role === "user") {
+    applyForMentor()
+    // }
+  }, [data, router, applyForMentor])
 
   return (
     <div>
@@ -24,7 +38,8 @@ const page = () => {
               Welcome, {data.user.name}!
             </h1>
             <p className="text-muted-foreground mt-3">
-              You are already logged in and waiting for admin approval.
+              Your mentorship application has been submitted successfully.
+              Please wait for an admin to approve your application.
             </p>
             <Button
               onClick={() => authClient.signOut()}
@@ -38,8 +53,8 @@ const page = () => {
             <Shield size={40} />
             <h1 className="mt-4 text-2xl font-bold">Mentor Login</h1>
             <p className="text-muted-foreground mt-3">
-              Login with discord and wait for admin to approve your mentorship
-              account
+              Login with discord to apply for a mentor account, Once approved,
+              you will be notified.
             </p>
 
             <Button

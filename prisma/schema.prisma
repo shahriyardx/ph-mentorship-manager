@@ -32,6 +32,8 @@ model User {
   student Student?
   mentor  Mentor?
 
+  appliedForMentor Boolean @default(false)
+
   role UserRole @default(user)
 
   @@unique([email])

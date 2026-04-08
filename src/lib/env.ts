@@ -10,6 +10,7 @@ export const env = createEnv({
     DICSORD_CLIENT_SECRET: z.string(),
     DISCORD_TOKEN: z.string(),
     SERVER_ID: z.string(),
+    ADMIN_ROLE_ID: z.string(),
   },
   client: {},
   runtimeEnv: {
@@ -20,5 +21,6 @@ export const env = createEnv({
     DICSORD_CLIENT_SECRET: process.env.DICSORD_CLIENT_SECRET,
     DISCORD_TOKEN: process.env.DISCORD_TOKEN,
     SERVER_ID: process.env.SERVER_ID,
+    ADMIN_ROLE_ID: process.env.ADMIN_ROLE_ID,
   },
 })
