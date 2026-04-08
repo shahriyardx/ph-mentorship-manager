@@ -4,8 +4,6 @@ import {
   SignIn,
 } from "@/components/auth-components"
 import StudentJoinForm from "@/components/forms/student-join-form"
-import Header from "@/components/header"
-import { Separator } from "@/components/ui/separator"
 import { GraduationCap } from "lucide-react"
 
 const page = () => {

@@ -1,8 +1,6 @@
 "use client"
 
-import Header from "@/components/header"
 import { SidebarLink } from "@/components/sidebar-link"
-import { Separator } from "@/components/ui/separator"
 import { trpc } from "@/trpc/client"
 import Link from "next/link"
 

@@ -1,8 +1,7 @@
 "use client"
 
-import { AddStudentSchema } from "@/schema"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm, useWatch } from "react-hook-form"
+import type { AddStudentSchema } from "@/schema"
+import { Controller, type UseFormReturn, useWatch } from "react-hook-form"
 import {
   Field,
   FieldDescription,
@@ -22,22 +21,15 @@ import {
 import { Textarea } from "../ui/textarea"
 import { trpc } from "@/trpc/client"
 import { useMemo } from "react"
-import { toast } from "sonner"
+import type z from "zod"
 
 const AddStudentsForMentorForm = ({
-  mentor,
-  refetch,
+  form,
+  handleSubmit,
 }: {
-  mentor: { id: string; name: string; email: string }
-  refetch: () => void
+  form: UseFormReturn<z.infer<typeof AddStudentSchema>>
+  handleSubmit: (values: { batchId: string; emails: string }) => void
 }) => {
-  const form = useForm({
-    resolver: zodResolver(AddStudentSchema),
-    defaultValues: {
-      mentorId: mentor.id,
-    },
-  })
-
   const emails = useWatch({
     control: form.control,
     name: "emails",
@@ -50,23 +42,11 @@ const AddStudentsForMentorForm = ({
   }, [emails])
 
   const { data: batches } = trpc.admin.batches.useQuery()
-  const { mutate: addStudents } = trpc.admin.addStudents.useMutation({
-    onSuccess: () => {
-      form.reset({
-        batchId: "",
-        emails: "",
-      })
-      toast.success("Students added successfully")
-      refetch()
-    },
-  })
 
   return (
     <form
       id="add-students-for-mentor"
-      onSubmit={form.handleSubmit((values) => {
-        addStudents(values)
-      })}
+      onSubmit={form.handleSubmit((values) => handleSubmit(values))}
     >
       <FieldGroup>
         <Controller

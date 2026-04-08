@@ -21,8 +21,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import AddStudentsForMentorForm from "@/components/forms/add-students-for-mentor"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { AddStudentSchema } from "@/schema"
+import { toast } from "sonner"
+import type { Mentor } from "@/generated/prisma/client"
+import { useState } from "react"
+import type z from "zod"
+import { Loader2 } from "lucide-react"
 
 const page = () => {
+  const [selectedMentor, setSelectedMentor] = useState<
+    (Mentor & { user: { name: string; email: string } }) | null
+  >(null)
+
   const trpcUtils = trpc.useUtils()
 
   const { data: mentors, isPending, refetch } = trpc.admin.mentors.useQuery()
@@ -31,6 +43,29 @@ const page = () => {
       trpcUtils.admin.mentors.invalidate()
     },
   })
+
+  const form = useForm({
+    resolver: zodResolver(AddStudentSchema),
+  })
+
+  const { mutate: addStudents, isPending: isAdding } =
+    trpc.admin.addStudents.useMutation({
+      onSuccess: () => {
+        toast.success("Students added successfully")
+        form.reset({
+          batchId: "",
+          emails: "",
+        })
+        refetch()
+        setSelectedMentor(null)
+      },
+    })
+
+  const handleAddStudents = (values: z.infer<typeof AddStudentSchema>) => {
+    if (!selectedMentor) return
+
+    addStudents({ ...values, mentorId: selectedMentor?.id })
+  }
 
   return (
     <div>
@@ -56,35 +91,10 @@ const page = () => {
               <TableCell>{mentor._count.studentsDatas}</TableCell>
               <TableCell>{mentor._count.students}</TableCell>
               <TableCell className="flex gap-2">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>Add Students</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Students</DialogTitle>
-                      <DialogDescription>
-                        <p>
-                          <span className="font-bold">Mentor: </span>{" "}
-                          {mentor.name}
-                        </p>
-                        <p>
-                          <span className="font-bold">Email: </span>
-                          {mentor.email}
-                        </p>
-                      </DialogDescription>
-                    </DialogHeader>
-                    <AddStudentsForMentorForm
-                      mentor={mentor}
-                      refetch={refetch}
-                    />
-                    <DialogFooter>
-                      <Button type="submit" form="add-students-for-mentor">
-                        Submit
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={() => setSelectedMentor(mentor)}>
+                  Add Students
+                </Button>
+
                 <Dialog>
                   <DialogTrigger>
                     <Button variant="destructive">Delete</Button>
@@ -112,6 +122,49 @@ const page = () => {
           ))}
         </TableBody>
       </Table>
+
+      <Dialog
+        open={!!selectedMentor}
+        onOpenChange={(value) => {
+          if (!value) {
+            setSelectedMentor(null)
+          }
+        }}
+      >
+        <DialogContent>
+          {selectedMentor && (
+            <DialogHeader>
+              <DialogTitle>Add Students</DialogTitle>
+              <DialogDescription>
+                <p>
+                  <span className="font-bold">Mentor: </span>{" "}
+                  {selectedMentor.user.name}
+                </p>
+                <p>
+                  <span className="font-bold">Email: </span>
+                  {selectedMentor.user.email}
+                </p>
+              </DialogDescription>
+            </DialogHeader>
+          )}
+          <AddStudentsForMentorForm
+            form={form}
+            handleSubmit={handleAddStudents}
+          />
+          <DialogFooter>
+            <Button
+              type="submit"
+              form="add-students-for-mentor"
+              disabled={isAdding}
+            >
+              {isAdding ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

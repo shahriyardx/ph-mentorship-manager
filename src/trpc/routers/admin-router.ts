@@ -119,7 +119,7 @@ export const adminRouter = createTRPCRouter({
           id: user.id,
         },
         data: {
-          role: "mentor",
+          role: user.role === "user" ? "mentor" : user.role,
         },
       })
     }),
@@ -131,7 +131,14 @@ export const adminRouter = createTRPCRouter({
           id: input.id,
         },
       })
-      if (!mentor) {
+
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          id: mentor?.userId,
+        },
+      })
+
+      if (!mentor || !user) {
         throw new Error("Mentor not found")
       }
 
@@ -140,12 +147,13 @@ export const adminRouter = createTRPCRouter({
           id: input.id,
         },
       })
+
       await ctx.prisma.user.update({
         where: {
           id: mentor.userId,
         },
         data: {
-          role: "user",
+          role: user.role === "mentor" ? "user" : user.role,
         },
       })
     }),
@@ -182,7 +190,7 @@ export const adminRouter = createTRPCRouter({
     return mentorWithUser
   }),
   addStudents: adminProcedure
-    .input(AddStudentSchema)
+    .input(AddStudentSchema.extend({ mentorId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const studentEmails =
         input.emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) ??

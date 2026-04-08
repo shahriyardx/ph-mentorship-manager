@@ -10,7 +10,6 @@ export const MentorSchema = z.object({
 })
 
 export const AddStudentSchema = z.object({
-  mentorId: z.string().min(1),
   batchId: z.string().min(1),
   emails: z.string().min(1),
 })
