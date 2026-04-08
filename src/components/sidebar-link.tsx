@@ -12,8 +12,12 @@ export const SidebarLink = ({
   const isActive = pathname === href
   return (
     <div className="flex gap-2 items-center">
-      {pathname === href && <span>-</span>}
-      <Link href={href} {...props} className={isActive ? "font-bold" : ""}>
+      {isActive && <span className="hidden md:inline-block">-</span>}
+      <Link
+        href={href}
+        {...props}
+        className={isActive ? "font-bold underline md:no-underline" : ""}
+      >
         {children}
       </Link>
     </div>

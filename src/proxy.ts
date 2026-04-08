@@ -37,7 +37,7 @@ export async function proxy(request: NextRequest) {
 
   if (
     request.nextUrl.pathname.startsWith("/mentor") &&
-    !["admin", "mentor"].includes(user.role)
+    !["admin", "superadmin", "mentor"].includes(user.role)
   ) {
     return NextResponse.redirect(new URL("/", request.url))
   }
