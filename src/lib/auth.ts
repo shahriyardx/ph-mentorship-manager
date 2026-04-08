@@ -10,7 +10,7 @@ export const getAuth = () => {
     user: {
       additionalFields: {
         role: {
-          type: ["user", "admin", "mentor"],
+          type: ["user", "admin", "mentor", "superadmin"],
           required: true,
           defaultValue: "user",
           input: false,

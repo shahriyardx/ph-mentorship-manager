@@ -2,7 +2,10 @@ import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -11,13 +14,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-const DashboardLayout = ({
-  pageTitle,
-  children,
-}: {
-  pageTitle: string
-  children: React.ReactNode
-}) => {
+export default function Page() {
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -32,16 +29,27 @@ const DashboardLayout = ({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  {pageTitle}
+                  <BreadcrumbLink href="#">
+                    Build Your Application
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
-        <div className="p-4 pt-0">{children}</div>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+          </div>
+          <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
 }
-
-export default DashboardLayout

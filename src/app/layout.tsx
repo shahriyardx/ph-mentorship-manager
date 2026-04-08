@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { TRPCProvider } from "@/trpc/client"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
-import Header from "@/components/header"
-import { Separator } from "@/components/ui/separator"
+
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,14 +31,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
-        <TRPCProvider>
-          <div className="max-w-6xl mx-auto p-5">
-            <Header />
-            <Separator className="my-5" />
-
-            {children}
-          </div>
-        </TRPCProvider>
+        <TooltipProvider>
+          <TRPCProvider>{children}</TRPCProvider>
+        </TooltipProvider>
         <Toaster />
       </body>
     </html>

@@ -7,7 +7,7 @@ import SuperJSON from "superjson"
 
 export type TRPCContext = {
   session: {
-    user: User & { role: "admin" | "user" | "mentor" }
+    user: User & { role: "admin" | "user" | "mentor" | "superadmin" }
     session: Session
   } | null
   prisma: PrismaClient
