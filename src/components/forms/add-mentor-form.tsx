@@ -37,7 +37,12 @@ const AddMentorForm = () => {
 
   const trpcUtils = trpc.useUtils()
 
-  const { data: channels } = useDiscord({ entity: "channels" })
+  const { data: settings } = trpc.admin.settings.useQuery()
+  const { data: channels } = useDiscord({
+    entity: "channels",
+    guildId: settings?.serverId,
+  })
+
   const { data: users } = trpc.admin.users.useQuery()
 
   const { mutate: addMentor } = trpc.admin.addMentor.useMutation({
