@@ -119,6 +119,13 @@ export const adminRouter = createTRPCRouter({
   users: adminProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany()
   }),
+  appliedForMentor: adminProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.user.findMany({
+      where: {
+        appliedForMentor: true,
+      },
+    })
+  }),
   addMentor: adminProcedure
     .input(MentorSchema)
     .mutation(async ({ input, ctx }) => {

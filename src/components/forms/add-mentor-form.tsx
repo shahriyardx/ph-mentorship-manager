@@ -43,8 +43,7 @@ const AddMentorForm = () => {
     guildId: settings?.serverId,
   })
 
-  const { data: users } = trpc.admin.users.useQuery()
-
+  const { data: users } = trpc.admin.appliedForMentor.useQuery()
   const { mutate: addMentor } = trpc.admin.addMentor.useMutation({
     onSuccess: () => {
       form.reset({
