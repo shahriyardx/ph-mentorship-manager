@@ -198,10 +198,14 @@ export const adminRouter = createTRPCRouter({
       })
 
       if (account) {
-        await sendDiscordDM(
-          account.accountId,
-          `Your mentorship application has been approved. Go to ${env.BETTER_AUTH_URL}/mentor to access your dashboard`,
-        )
+        try {
+          await sendDiscordDM(
+            account.accountId,
+            `Your mentorship application has been approved. Go to ${env.BETTER_AUTH_URL}/mentor to access your dashboard`,
+          )
+        } catch {
+          console.error("Failed to send Discord DM")
+        }
       }
     }),
   deleteMentor: adminProcedure
