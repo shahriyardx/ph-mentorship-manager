@@ -297,6 +297,33 @@ export const adminRouter = createTRPCRouter({
         }
       }
     }),
+  studentsByMentor: adminProcedure
+    .input(
+      z.object({
+        mentorId: z.string().optional(),
+        batchId: z.string().optional(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const assignedStudents = await ctx.prisma.studentsData.findMany({
+        where: {
+          batchId: input.batchId,
+          mentorId: input.mentorId,
+        },
+      })
+
+      const joinedStudents = await ctx.prisma.student.findMany({
+        where: {
+          batchId: input.batchId,
+          mentorId: input.mentorId,
+        },
+        include: {
+          user: true,
+        },
+      })
+
+      return { assignedStudents, joinedStudents }
+    }),
 })
 
 async function sendDiscordDM(userId: string, message: string) {
