@@ -10,6 +10,7 @@ import {
   createTRPCRouter,
 } from "../init"
 import z from "zod"
+import { env } from "@/lib/env"
 
 export const adminRouter = createTRPCRouter({
   settings: adminProcedure.query(async ({ ctx }) => {
@@ -168,6 +169,7 @@ export const adminRouter = createTRPCRouter({
           userId: input.mentorId,
         },
       })
+
       if (mentor) {
         throw new Error("Mentor already exists")
       }
@@ -188,6 +190,19 @@ export const adminRouter = createTRPCRouter({
           role: user.role === "user" ? "mentor" : user.role,
         },
       })
+
+      const account = await ctx.prisma.account.findFirst({
+        where: {
+          userId: input.mentorId,
+        },
+      })
+
+      if (account) {
+        await sendDiscordDM(
+          account.accountId,
+          `Your mentorship application has been approved. Go to ${env.BETTER_AUTH_URL}/mentor to access your dashboard`,
+        )
+      }
     }),
   deleteMentor: adminProcedure
     .input(z.object({ id: z.string() }))
@@ -279,3 +294,49 @@ export const adminRouter = createTRPCRouter({
       }
     }),
 })
+
+async function sendDiscordDM(userId: string, message: string) {
+  const headers = {
+    Authorization: `Bot ${env.DISCORD_TOKEN}`,
+    "Content-Type": "application/json",
+    "User-Agent": "ProgrammingHero (https://programming-hero.com, 1.0)",
+  }
+
+  // Step 1: Create a DM channel with the user
+  const dmChannelResponse = await fetch(
+    "https://discord.com/api/v10/users/@me/channels",
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ recipient_id: userId }),
+    },
+  )
+
+  if (!dmChannelResponse.ok) {
+    const error = await dmChannelResponse.json()
+    throw new Error(
+      `Failed to create DM channel: ${error.message || dmChannelResponse.statusText}`,
+    )
+  }
+
+  const dmChannel = await dmChannelResponse.json()
+
+  // Step 2: Send the message to the newly created DM channel
+  const messageResponse = await fetch(
+    `https://discord.com/api/v10/channels/${dmChannel.id}/messages`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ content: message }),
+    },
+  )
+
+  if (!messageResponse.ok) {
+    const error = await messageResponse.json()
+    throw new Error(
+      `Failed to send message: ${error.message || messageResponse.statusText}`,
+    )
+  }
+
+  return await messageResponse.json()
+}
