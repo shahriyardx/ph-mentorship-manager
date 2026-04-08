@@ -31,10 +31,14 @@ export const mentorRouter = createTRPCRouter({
       },
     })
 
-    await sendChannelMessage(
-      "1491315142204457103",
-      `${user.name} has requested to be a mentor and awaiting approval. \nVisit ${env.BETTER_AUTH_URL}/admin to assign them as mentor`,
-    )
+    const settings = await ctx.prisma.settings.findFirst()
+
+    if (settings?.dashboardLogChannelId) {
+      await sendChannelMessage(
+        settings.dashboardLogChannelId,
+        `${user.name} has requested to be a mentor and awaiting approval. \nVisit ${env.BETTER_AUTH_URL}/admin to assign them as mentor`,
+      )
+    }
   }),
   students: adminOrMentorProcedure
     .input(
