@@ -2,6 +2,8 @@
 
 import Link, { type LinkProps } from "next/link"
 import { usePathname } from "next/navigation"
+import { Button, buttonVariants } from "./ui/button"
+import { cn } from "@/lib/utils"
 
 export const SidebarLink = ({
   href,
@@ -11,15 +13,35 @@ export const SidebarLink = ({
   const pathname = usePathname()
   const isActive = pathname === href
   return (
-    <div className="flex gap-2 items-center">
-      {isActive && <span className="hidden md:inline-block">-</span>}
-      <Link
-        href={href}
-        {...props}
-        className={isActive ? "font-bold underline md:no-underline" : ""}
-      >
+    <Button
+      variant={isActive ? "secondary" : "ghost"}
+      className="flex gap-2 items-center justify-start md:w-full"
+    >
+      <Link href={href} {...props}>
         {children}
       </Link>
-    </div>
+    </Button>
+  )
+}
+
+export const SidebarTextLink = ({
+  href,
+  children,
+  ...props
+}: LinkProps & { children: React.ReactNode }) => {
+  const pathname = usePathname()
+  const isActive = pathname === href
+
+  return (
+    <Link
+      href={href}
+      className={cn(
+        buttonVariants({ variant: "link" }),
+        isActive && "underline",
+      )}
+      {...props}
+    >
+      {children}
+    </Link>
   )
 }
