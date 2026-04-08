@@ -15,7 +15,32 @@ export const adminRouter = createTRPCRouter({
   settings: adminProcedure.query(async ({ ctx }) => {
     return await ctx.prisma.settings.findFirst()
   }),
-
+  makeAdmin: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.user.update({
+        where: {
+          id: input.userId,
+          role: { in: ["user", "mentor"] },
+        },
+        data: {
+          role: "admin",
+        },
+      })
+    }),
+  removeAdmin: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.user.update({
+        where: {
+          id: input.userId,
+          role: { in: ["admin"] },
+        },
+        data: {
+          role: "user",
+        },
+      })
+    }),
   updateSettings: adminProcedure
     .input(SettingsSchema)
     .mutation(async ({ input, ctx }) => {
