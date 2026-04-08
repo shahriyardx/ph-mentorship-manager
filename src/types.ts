@@ -13,3 +13,8 @@ export type Channel = {
   parent_id?: string
   sub_channels: Array<Channel>
 }
+
+export type Server = {
+  id: string
+  name: string
+}

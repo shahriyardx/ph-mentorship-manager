@@ -1,7 +1,6 @@
 import z from "zod"
 import { createTRPCRouter, protectedProcedure } from "../init"
 import { TRPCError } from "@trpc/server"
-import { env } from "@/lib/env"
 import { addUserToGuild, giveChannelAccess } from "@/lib/auth"
 
 export const studentRouter = createTRPCRouter({
@@ -10,6 +9,8 @@ export const studentRouter = createTRPCRouter({
     return settings
   }),
   getStudentInfo: protectedProcedure.query(async ({ ctx }) => {
+    const settings = await ctx.prisma.settings.findFirst()
+
     const student = await ctx.prisma.student.findFirst({
       where: {
         userId: ctx.session.user.id,
@@ -23,7 +24,7 @@ export const studentRouter = createTRPCRouter({
       },
     })
 
-    return { student, serverId: env.SERVER_ID }
+    return { student, serverId: settings?.serverId ?? "" }
   }),
 
   joinMentorship: protectedProcedure

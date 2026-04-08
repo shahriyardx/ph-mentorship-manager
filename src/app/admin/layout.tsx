@@ -1,6 +1,6 @@
 import { SidebarLink } from "@/components/sidebar-link"
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
@@ -20,6 +20,9 @@ export default function AdminLayout({
           </li>
           <li>
             <SidebarLink href="/admin/students">Students</SidebarLink>
+          </li>
+          <li>
+            <SidebarLink href="/admin/settings">Settings</SidebarLink>
           </li>
         </ul>
       </aside>

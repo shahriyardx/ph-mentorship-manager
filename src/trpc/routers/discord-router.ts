@@ -14,19 +14,28 @@ export const discordRouter = createTRPCRouter({
   get: adminProcedure
     .input(
       z.object({
-        entity: z.enum(["roles", "channels"]),
+        guildId: z.string().optional(),
+        entity: z.enum(["roles", "channels", "servers"]),
       }),
     )
-    .query(async ({ input }) => {
-      const response = await fetch(
-        `https://discord.com/api/v10/guilds/${env.SERVER_ID}/${input.entity}`,
-        {
-          headers: {
-            Authorization: `Bot ${env.DISCORD_TOKEN}`,
-            "User-Agent": "CustomCommands (https://makeown.cc, 1.0)",
-          },
+    .query(async ({ input, ctx }) => {
+      const settings = await ctx.prisma.settings.findFirst()
+
+      let url: string
+
+      if (input.entity === "servers") {
+        url = "https://discord.com/api/v10/users/@me/guilds"
+      } else {
+        url = `https://discord.com/api/v10/guilds/${input.guildId ?? settings?.serverId}/${input.entity}`
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bot ${env.DISCORD_TOKEN}`,
+          "User-Agent": "CustomCommands (https://makeown.cc, 1.0)",
         },
-      )
+      })
+
       if (!response.ok) return []
 
       const data = await response.json()
@@ -36,12 +45,21 @@ export const discordRouter = createTRPCRouter({
           TEXTABLE_CHANNEL_TYPES.has(c.type),
         )
       }
+
       if (input.entity === "roles") {
         return data.filter(
           (r: { managed: boolean; name: string }) =>
             !r.managed && r.name !== "@everyone",
         )
       }
+
+      if (input.entity === "servers") {
+        return data.map((s: { id: string; name: string }) => ({
+          id: s.id,
+          name: s.name,
+        }))
+      }
+
       return data
     }),
 })

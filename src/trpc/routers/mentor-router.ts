@@ -14,7 +14,13 @@ export const mentorRouter = createTRPCRouter({
       },
     })
 
-    if (!user || user.appliedForMentor || user.role === "mentor") return
+    if (
+      !user ||
+      user.appliedForMentor ||
+      user.role === "mentor" ||
+      user.role === "admin"
+    )
+      return
 
     await ctx.prisma.user.update({
       where: {

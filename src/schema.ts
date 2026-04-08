@@ -17,3 +17,8 @@ export const AddStudentSchema = z.object({
 export const StudentJoinSchema = z.object({
   email: z.email(),
 })
+
+export const SettingsSchema = z.object({
+  serverId: z.string().min(1),
+  dashboardLogChannelId: z.string().min(1),
+})

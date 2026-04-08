@@ -1,4 +1,9 @@
-import { AddStudentSchema, BatchSchema, MentorSchema } from "@/schema"
+import {
+  AddStudentSchema,
+  BatchSchema,
+  MentorSchema,
+  SettingsSchema,
+} from "@/schema"
 import {
   adminOrMentorProcedure,
   adminProcedure,
@@ -7,6 +12,34 @@ import {
 import z from "zod"
 
 export const adminRouter = createTRPCRouter({
+  settings: adminProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.settings.findFirst()
+  }),
+
+  updateSettings: adminProcedure
+    .input(SettingsSchema)
+    .mutation(async ({ input, ctx }) => {
+      const settings = await ctx.prisma.settings.findFirst()
+      if (!settings) {
+        await ctx.prisma.settings.create({
+          data: {
+            serverId: input.serverId,
+            dashboardLogChannelId: input.dashboardLogChannelId,
+            currentBatchId: "",
+          },
+        })
+      } else {
+        await ctx.prisma.settings.update({
+          where: {
+            id: settings.id,
+          },
+          data: {
+            serverId: input.serverId,
+            dashboardLogChannelId: input.dashboardLogChannelId,
+          },
+        })
+      }
+    }),
   addBatch: adminProcedure
     .input(BatchSchema)
     .mutation(async ({ input, ctx }) => {

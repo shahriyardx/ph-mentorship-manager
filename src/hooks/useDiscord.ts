@@ -1,17 +1,20 @@
-import type { Role, Channel } from "@/types"
+import type { Role, Channel, Server } from "@/types"
 import { trpc } from "@/trpc/client"
 
 type EntityMap = {
   roles: Role
   channels: Channel
+  servers: Server
 }
 
 export function useDiscord<T extends keyof EntityMap>({
+  guildId,
   entity,
 }: {
+  guildId?: string
   entity: T
 }) {
-  const { data, status } = trpc.discord.get.useQuery({ entity })
+  const { data, status } = trpc.discord.get.useQuery({ entity, guildId })
 
   return { data: (data || []) as EntityMap[T][], status }
 }

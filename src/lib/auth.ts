@@ -3,25 +3,6 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "./prisma"
 import { env } from "./env"
 
-const isAdmin = async (discordUserId: string) => {
-  const res = await fetch(
-    `https://discord.com/api/v10/guilds/${env.SERVER_ID}/members/${discordUserId}`,
-    {
-      headers: {
-        Authorization: `Bot ${env.DISCORD_TOKEN}`,
-      },
-    },
-  )
-
-  if (!res.ok) {
-    console.error("Failed to fetch member:", await res.text())
-    return false
-  }
-
-  const member = await res.json()
-  return member.roles.includes(env.ADMIN_ROLE_ID)
-}
-
 export const getAuth = () => {
   return betterAuth({
     database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -43,25 +24,6 @@ export const getAuth = () => {
         scope: ["identify", "email", "guilds.join"],
       },
     },
-    databaseHooks: {
-      account: {
-        create: {
-          after: async (account) => {
-            const admin = await isAdmin(account.accountId)
-            if (admin) {
-              await prisma.user.update({
-                where: {
-                  id: account.userId,
-                },
-                data: {
-                  role: "admin",
-                },
-              })
-            }
-          },
-        },
-      },
-    },
   })
 }
 export type Auth = ReturnType<typeof getAuth>
@@ -70,8 +32,9 @@ export const addUserToGuild = async (
   accessToken: string,
   discordUserId: string,
 ) => {
+  const settings = await prisma.settings.findFirst()
   await fetch(
-    `https://discord.com/api/v10/guilds/${env.SERVER_ID}/members/${discordUserId}`,
+    `https://discord.com/api/v10/guilds/${settings?.serverId}/members/${discordUserId}`,
     {
       method: "PUT",
       headers: {

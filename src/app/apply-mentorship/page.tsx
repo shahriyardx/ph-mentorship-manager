@@ -22,11 +22,13 @@ const page = () => {
 
     if (data.user.role === "mentor") {
       router.push("/mentor")
+    } else if (data.user.role === "admin") {
+      router.push("/admin")
     }
 
-    // if (data.user.role === "user") {
-    applyForMentor()
-    // }
+    if (data.user.role === "user") {
+      applyForMentor()
+    }
   }, [data, router, applyForMentor])
 
   return (
