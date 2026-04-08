@@ -63,7 +63,7 @@ const page = () => {
               onClick={() =>
                 authClient.signIn.social({
                   provider: "discord",
-                  callbackURL: "/mentor-login",
+                  callbackURL: "/",
                 })
               }
               className="p-6 w-full rounded-full mt-10 text-lg bg-indigo-500 text-white"
