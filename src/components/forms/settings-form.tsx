@@ -79,7 +79,7 @@ const SettingsForm = () => {
       {settings && !isLoading && (
         <Card>
           <CardHeader>
-            <CardTitle>Settings</CardTitle>
+            <CardTitle>Server Settings</CardTitle>
           </CardHeader>
           <CardContent>
             <form id="settings-form" onSubmit={form.handleSubmit(handleSubmit)}>
