@@ -22,6 +22,9 @@ export default async function AdminLayout({
             <SidebarLink href="/admin/students">Students</SidebarLink>
           </li>
           <li>
+            <SidebarLink href="/admin/users">Users</SidebarLink>
+          </li>
+          <li>
             <SidebarLink href="/admin/settings">Settings</SidebarLink>
           </li>
         </ul>
