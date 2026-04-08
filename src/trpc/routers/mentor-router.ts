@@ -18,7 +18,8 @@ export const mentorRouter = createTRPCRouter({
       !user ||
       user.appliedForMentor ||
       user.role === "mentor" ||
-      user.role === "admin"
+      user.role === "admin" ||
+      user.role === "superadmin"
     )
       return
 
