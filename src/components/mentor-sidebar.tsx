@@ -14,7 +14,7 @@ export const MentorSidebar = () => {
   const { data: batches } = trpc.admin.batches.useQuery()
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <SidebarLink href="/mentor">Dashboard</SidebarLink>
       <Collapsible>
         <CollapsibleTrigger asChild>
