@@ -88,6 +88,11 @@ const page = () => {
           </div>
           <TabsContent value="assigned">
             <Table className="border-2">
+              <TableCaption>
+                {!selectedBatch || !selectedMentor
+                  ? "Select a batch and mentor to view assigned students"
+                  : "Assigned Students"}
+              </TableCaption>
               <TableHeader>
                 <TableRow>
                   <TableHead>Email</TableHead>
