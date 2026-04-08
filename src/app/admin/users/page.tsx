@@ -12,20 +12,36 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMemo, useState } from "react"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { AddMentorFormBase } from "@/components/forms/add-mentor-form"
+import { Loader2 } from "lucide-react"
 
 const page = () => {
   const [search, setSearch] = useState("")
+  const [isMakingMentor, setIsMakingMentor] = useState(false)
+
   const { data: users, isPending, refetch } = trpc.admin.users.useQuery()
-  const { mutate: makeAdmin } = trpc.admin.makeAdmin.useMutation({
-    onSuccess: () => {
-      refetch()
-    },
-  })
-  const { mutate: removeAdmin } = trpc.admin.removeAdmin.useMutation({
-    onSuccess: () => {
-      refetch()
-    },
-  })
+  const { mutate: makeAdmin, isPending: isMakingAdmin } =
+    trpc.admin.makeAdmin.useMutation({
+      onSuccess: () => {
+        refetch()
+      },
+    })
+  const { mutate: removeAdmin, isPending: isRemovingAdmin } =
+    trpc.admin.removeAdmin.useMutation({
+      onSuccess: () => {
+        refetch()
+      },
+    })
 
   const filteredUsers = useMemo(() => {
     if (!users) return []
@@ -68,17 +84,68 @@ const page = () => {
               <TableCell>
                 {user.role === "superadmin" ? "admin" : user.role}
               </TableCell>
-              <TableCell>
+              <TableCell className="flex items-center gap-2">
                 {user.role === "superadmin" ? (
                   <span className="text-muted-foreground">Not available</span>
                 ) : ["mentor", "user"].includes(user.role) ? (
-                  <Button onClick={() => makeAdmin({ userId: user.id })}>
+                  <Button
+                    variant={"outline"}
+                    disabled={isMakingAdmin}
+                    onClick={() => makeAdmin({ userId: user.id })}
+                  >
+                    {isMakingAdmin && <Loader2 className="animate-spin" />}
                     Make Admin
                   </Button>
                 ) : (
-                  <Button onClick={() => removeAdmin({ userId: user.id })}>
+                  <Button
+                    variant={"destructive"}
+                    disabled={isRemovingAdmin}
+                    onClick={() => removeAdmin({ userId: user.id })}
+                  >
+                    {isRemovingAdmin && <Loader2 className="animate-spin" />}
                     Remove Admin
                   </Button>
+                )}
+
+                {user.role === "user" && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant={"outline"}>Make Mentor</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Make Mentor</DialogTitle>
+                        <DialogDescription>
+                          You are about to make {user.name} a mentor.
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      <AddMentorFormBase
+                        userId={user.id}
+                        onSubmit={() => setIsMakingMentor(true)}
+                        onSuccess={() => {
+                          setIsMakingMentor(false)
+                          refetch()
+                        }}
+                      />
+
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant={"outline"}>Cancel</Button>
+                        </DialogClose>
+                        <Button
+                          disabled={isMakingMentor}
+                          type="submit"
+                          form="add-mentor-form"
+                        >
+                          {isMakingMentor && (
+                            <Loader2 className="animate-spin" />
+                          )}
+                          Submit
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 )}
               </TableCell>
             </TableRow>

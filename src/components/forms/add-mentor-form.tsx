@@ -31,8 +31,41 @@ import { trpc } from "@/trpc/client"
 import { toast } from "sonner"
 
 const AddMentorForm = () => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Add Mentor</CardTitle>
+        <CardDescription>
+          Enter the details of the mentor you want to add.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <AddMentorFormBase />
+      </CardContent>
+      <CardFooter>
+        <Button type="submit" form="add-mentor-form">
+          Submit
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}
+
+export const AddMentorFormBase = ({
+  userId,
+  onSuccess,
+  onSubmit,
+}: {
+  userId?: string
+  onSuccess?: () => void
+  onSubmit?: () => void
+}) => {
   const form = useForm({
     resolver: zodResolver(MentorSchema),
+    defaultValues: {
+      mentorId: userId ?? "",
+      discordChannelId: "",
+    },
   })
 
   const trpcUtils = trpc.useUtils()
@@ -45,6 +78,9 @@ const AddMentorForm = () => {
 
   const { data: users, refetch } = trpc.admin.appliedForMentor.useQuery()
   const { mutate: addMentor } = trpc.admin.addMentor.useMutation({
+    onMutate: () => {
+      onSubmit?.()
+    },
     onSuccess: () => {
       form.reset({
         mentorId: "",
@@ -53,6 +89,7 @@ const AddMentorForm = () => {
       toast.success("Mentor added successfully")
       trpcUtils.admin.mentors.invalidate()
       refetch()
+      onSuccess?.()
     },
     onError: (error) => {
       toast.error(error.message)
@@ -60,93 +97,79 @@ const AddMentorForm = () => {
   })
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add Mentor</CardTitle>
-        <CardDescription>
-          Enter the details of the mentor you want to add.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form
-          id="add-mentor-form"
-          onSubmit={form.handleSubmit((data) => {
-            addMentor(data)
-          })}
-        >
-          <FieldGroup>
-            <Controller
-              name="mentorId"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>User</FieldLabel>
-                  <MultiSelect
-                    values={field.value ? [field.value] : undefined}
-                    onValuesChange={(values) => field.onChange(values[0])}
-                    single={true}
-                  >
-                    <MultiSelectTrigger>
-                      <MultiSelectValue placeholder="Select a user" />
-                    </MultiSelectTrigger>
-                    <MultiSelectContent>
-                      <MultiSelectGroup>
-                        {users?.map((user) => (
-                          <MultiSelectItem key={user.id} value={user.id}>
-                            {user.name}
-                          </MultiSelectItem>
-                        ))}
-                      </MultiSelectGroup>
-                    </MultiSelectContent>
-                  </MultiSelect>
+    <form
+      id="add-mentor-form"
+      onSubmit={form.handleSubmit((data) => {
+        addMentor(data)
+      })}
+    >
+      <FieldGroup>
+        {!userId && (
+          <Controller
+            name="mentorId"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>User</FieldLabel>
+                <MultiSelect
+                  values={field.value ? [field.value] : undefined}
+                  onValuesChange={(values) => field.onChange(values[0])}
+                  single={true}
+                >
+                  <MultiSelectTrigger>
+                    <MultiSelectValue placeholder="Select a user" />
+                  </MultiSelectTrigger>
+                  <MultiSelectContent>
+                    <MultiSelectGroup>
+                      {users?.map((user) => (
+                        <MultiSelectItem key={user.id} value={user.id}>
+                          {user.name}
+                        </MultiSelectItem>
+                      ))}
+                    </MultiSelectGroup>
+                  </MultiSelectContent>
+                </MultiSelect>
 
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-            <Controller
-              name="discordChannelId"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Discord Channel</FieldLabel>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        )}
 
-                  <MultiSelect
-                    values={field.value ? [field.value] : undefined}
-                    onValuesChange={(values) => field.onChange(values[0])}
-                    single={true}
-                  >
-                    <MultiSelectTrigger>
-                      <MultiSelectValue placeholder="Select a channel" />
-                    </MultiSelectTrigger>
-                    <MultiSelectContent>
-                      <MultiSelectGroup>
-                        {channels.map((channel) => (
-                          <MultiSelectItem key={channel.id} value={channel.id}>
-                            {channel.name}
-                          </MultiSelectItem>
-                        ))}
-                      </MultiSelectGroup>
-                    </MultiSelectContent>
-                  </MultiSelect>
+        <Controller
+          name="discordChannelId"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Discord Channel</FieldLabel>
 
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </FieldGroup>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Button type="submit" form="add-mentor-form">
-          Submit
-        </Button>
-      </CardFooter>
-    </Card>
+              <MultiSelect
+                values={field.value ? [field.value] : undefined}
+                onValuesChange={(values) => field.onChange(values[0])}
+                single={true}
+              >
+                <MultiSelectTrigger>
+                  <MultiSelectValue placeholder="Select a channel" />
+                </MultiSelectTrigger>
+                <MultiSelectContent>
+                  <MultiSelectGroup>
+                    {channels.map((channel) => (
+                      <MultiSelectItem key={channel.id} value={channel.id}>
+                        {channel.name}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+      </FieldGroup>
+    </form>
   )
 }
 
