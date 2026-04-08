@@ -41,7 +41,7 @@ const page = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Email</TableHead>
-                  <TableHead>Status (joined/not)</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Assigned At</TableHead>
                 </TableRow>
               </TableHeader>
