@@ -159,6 +159,7 @@ export const adminRouter = createTRPCRouter({
           id: user.id,
         },
         data: {
+          appliedForMentor: false,
           role: user.role === "user" ? "mentor" : user.role,
         },
       })

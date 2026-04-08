@@ -5,8 +5,10 @@ import { authClient } from "@/lib/auth-client"
 import Image from "next/image"
 import { Button } from "./ui/button"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 const Header = () => {
+  const router = useRouter()
   const { data } = authClient.useSession()
 
   return (
@@ -26,7 +28,7 @@ const Header = () => {
         <div className="ml-auto flex gap-2">
           {data && (
             <>
-              {data.user.role === "admin" && (
+              {["admin", "superadmin"].includes(data.user.role) && (
                 <Button size="lg" variant="outline" asChild>
                   <Link href="/admin">Admin Dashboard</Link>
                 </Button>
@@ -41,7 +43,10 @@ const Header = () => {
               <Button
                 variant="destructive"
                 size="lg"
-                onClick={() => authClient.signOut()}
+                onClick={async () => {
+                  await authClient.signOut()
+                  router.push("/")
+                }}
               >
                 Logout
               </Button>

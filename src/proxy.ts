@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getAuth } from "./lib/auth"
 import { headers } from "next/headers"
+import { prisma } from "./lib/prisma"
 
 export async function proxy(request: NextRequest) {
   const session = await getAuth().api.getSession({
@@ -14,7 +15,23 @@ export async function proxy(request: NextRequest) {
 
   const user = session.user
 
-  if (request.nextUrl.pathname.startsWith("/admin") && user.role !== "admin") {
+  if (
+    request.nextUrl.pathname.startsWith("/admin") &&
+    !["admin", "superadmin"].includes(user.role)
+  ) {
+    const admins = await prisma.user.findMany({
+      where: { role: { in: ["admin", "superadmin"] } },
+    })
+
+    if (admins.length === 0) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { role: "superadmin" },
+      })
+
+      return NextResponse.redirect(new URL("/admin", request.url))
+    }
+
     return NextResponse.redirect(new URL("/", request.url))
   }
 

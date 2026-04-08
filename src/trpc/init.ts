@@ -48,7 +48,7 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
   })
 })
 
-const isRole = (role: ("admin" | "mentor" | "user")[]) =>
+const isRole = (role: ("admin" | "mentor" | "user" | "superadmin")[]) =>
   t.middleware(({ ctx, next }) => {
     if (!ctx.session || !ctx.session.user) {
       throw new TRPCError({
@@ -75,7 +75,7 @@ export const createTRPCRouter = t.router
 export const createCallerFactory = t.createCallerFactory
 export const publicProcedure = t.procedure
 export const protectedProcedure = t.procedure.use(isAuthenticated)
-export const adminProcedure = t.procedure.use(isRole(["admin"]))
+export const adminProcedure = t.procedure.use(isRole(["admin", "superadmin"]))
 export const adminOrMentorProcedure = t.procedure.use(
-  isRole(["admin", "mentor"]),
+  isRole(["admin", "mentor", "superadmin"]),
 )
