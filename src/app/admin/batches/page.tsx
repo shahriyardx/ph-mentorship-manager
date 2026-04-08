@@ -20,14 +20,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Loader2 } from "lucide-react"
 
 const page = () => {
   const { data: batches, isPending, refetch } = trpc.admin.batches.useQuery()
-  const { mutate: deleteBatch } = trpc.admin.deleteBatch.useMutation({
-    onSuccess: () => {
-      refetch()
-    },
-  })
+  const { mutate: deleteBatch, isPending: isDeleting } =
+    trpc.admin.deleteBatch.useMutation({
+      onSuccess: () => {
+        refetch()
+      },
+    })
   const { mutate: setCurrentBatch } = trpc.admin.setCurrentBatch.useMutation({
     onSuccess: () => {
       refetch()
@@ -78,9 +80,11 @@ const page = () => {
                     </DialogHeader>
                     <DialogFooter>
                       <Button
+                        disabled={isDeleting}
                         variant="destructive"
                         onClick={() => deleteBatch({ id: batch.id })}
                       >
+                        {isDeleting && <Loader2 className="animate-spin" />}
                         Delete
                       </Button>
                     </DialogFooter>
