@@ -1,10 +1,10 @@
+import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
+
 const page = () => {
   return (
-    <div>
-      <div className="space-y-5">
-        <h1>Welcome to mentor dashboard</h1>
-      </div>
-    </div>
+    <DashboardPageWrapper pageTitle="Mentor Dashboard">
+      <h1>Welcome to mentor dashboard</h1>
+    </DashboardPageWrapper>
   )
 }
 
