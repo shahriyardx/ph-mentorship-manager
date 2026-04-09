@@ -28,8 +28,10 @@ import { toast } from "sonner"
 import type { Mentor } from "@/generated/prisma/client"
 import { useState } from "react"
 import type z from "zod"
-import { Loader2 } from "lucide-react"
+import { Hash, Loader2 } from "lucide-react"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
+import { useDiscord } from "@/hooks/useDiscord"
+import Link from "next/link"
 
 const page = () => {
   const [selectedMentor, setSelectedMentor] = useState<
@@ -38,6 +40,7 @@ const page = () => {
 
   const trpcUtils = trpc.useUtils()
 
+  const { data: channels, status } = useDiscord({ entity: "channels" })
   const { data: mentors, isPending, refetch } = trpc.admin.mentors.useQuery()
   const { mutate: deleteMentor } = trpc.admin.deleteMentor.useMutation({
     onSuccess: () => {
@@ -68,6 +71,15 @@ const page = () => {
     addStudents({ ...values, mentorId: selectedMentor?.id })
   }
 
+  const getMentorChannel = (mentor: Mentor) => {
+    const channel = channels?.find((c) => c.id === mentor.discordChannelId)
+
+    return {
+      name: `${channel?.name}`,
+      link: `https://discord.com/channels/${channel?.guild_id}/${channel?.id}`,
+    }
+  }
+
   return (
     <DashboardPageWrapper pageTitle="Mentors">
       <div>
@@ -79,6 +91,7 @@ const page = () => {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Channel</TableHead>
               <TableHead>Assgined Students</TableHead>
               <TableHead>Joined Students</TableHead>
               <TableHead>Actions</TableHead>
@@ -89,6 +102,16 @@ const page = () => {
               <TableRow key={mentor.id}>
                 <TableCell>{mentor.name}</TableCell>
                 <TableCell>{mentor.email}</TableCell>
+                <TableCell>
+                  <Link
+                    className="bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-200 rounded-md p-1 flex items-center gap-1"
+                    href={getMentorChannel(mentor).link}
+                    target="_blank"
+                  >
+                    <Hash size={15} />
+                    {getMentorChannel(mentor).name}
+                  </Link>
+                </TableCell>
                 <TableCell>{mentor._count.studentsDatas}</TableCell>
                 <TableCell>{mentor._count.students}</TableCell>
                 <TableCell className="flex gap-2">

@@ -14,7 +14,6 @@ export const discordRouter = createTRPCRouter({
   get: adminProcedure
     .input(
       z.object({
-        guildId: z.string().optional(),
         entity: z.enum(["roles", "channels", "servers"]),
       }),
     )
@@ -26,7 +25,7 @@ export const discordRouter = createTRPCRouter({
       if (input.entity === "servers") {
         url = "https://discord.com/api/v10/users/@me/guilds"
       } else {
-        url = `https://discord.com/api/v10/guilds/${input.guildId ?? settings?.serverId}/${input.entity}`
+        url = `https://discord.com/api/v10/guilds/${settings?.serverId}/${input.entity}`
       }
 
       const response = await fetch(url, {
@@ -41,9 +40,12 @@ export const discordRouter = createTRPCRouter({
       const data = await response.json()
 
       if (input.entity === "channels") {
-        return data.filter((c: { type: number }) =>
-          TEXTABLE_CHANNEL_TYPES.has(c.type),
-        )
+        return data
+          .filter((c: { type: number }) => TEXTABLE_CHANNEL_TYPES.has(c.type))
+          .map((c) => ({
+            ...c,
+            guild_id: settings?.serverId,
+          }))
       }
 
       if (input.entity === "roles") {

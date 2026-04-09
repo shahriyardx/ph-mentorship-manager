@@ -12,6 +12,7 @@ export type Channel = {
   type: string
   parent_id?: string
   sub_channels: Array<Channel>
+  guild_id: string
 }
 
 export type Server = {
