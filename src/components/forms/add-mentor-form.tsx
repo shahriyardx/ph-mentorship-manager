@@ -70,10 +70,8 @@ export const AddMentorFormBase = ({
 
   const trpcUtils = trpc.useUtils()
 
-  const { data: settings } = trpc.admin.settings.useQuery()
   const { data: channels } = useDiscord({
     entity: "channels",
-    guildId: settings?.serverId,
   })
 
   const { data: users, refetch } = trpc.admin.appliedForMentor.useQuery()

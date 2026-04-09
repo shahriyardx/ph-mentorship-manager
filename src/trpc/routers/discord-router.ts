@@ -16,6 +16,7 @@ export const discordRouter = createTRPCRouter({
     .input(
       z.object({
         entity: z.enum(["roles", "channels", "servers"]),
+        guildId: z.string().optional(),
       }),
     )
     .query(async ({ input, ctx }) => {
@@ -26,7 +27,7 @@ export const discordRouter = createTRPCRouter({
       if (input.entity === "servers") {
         url = "https://discord.com/api/v10/users/@me/guilds"
       } else {
-        url = `https://discord.com/api/v10/guilds/${settings?.serverId}/${input.entity}`
+        url = `https://discord.com/api/v10/guilds/${input.guildId ?? settings?.serverId}/${input.entity}`
       }
 
       const response = await fetch(url, {

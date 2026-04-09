@@ -8,11 +8,12 @@ type EntityMap = {
 }
 
 export function useDiscord<T extends keyof EntityMap>({
+  guildId,
   entity,
 }: {
   entity: T
 }) {
-  const { data, status } = trpc.discord.get.useQuery({ entity })
+  const { data, status } = trpc.discord.get.useQuery({ entity, guildId })
 
   return { data: (data || []) as EntityMap[T][], status }
 }
