@@ -92,8 +92,7 @@ const page = () => {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Channel</TableHead>
-              <TableHead>Assgined Students</TableHead>
-              <TableHead>Joined Students</TableHead>
+              <TableHead>Students</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -104,7 +103,7 @@ const page = () => {
                 <TableCell>{mentor.email}</TableCell>
                 <TableCell>
                   <Link
-                    className="bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-200 rounded-md p-1 flex items-center gap-1"
+                    className="bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-200 rounded-md p-1 flex items-center gap-1 w-max"
                     href={getMentorChannel(mentor).link}
                     target="_blank"
                   >
@@ -112,8 +111,10 @@ const page = () => {
                     {getMentorChannel(mentor).name}
                   </Link>
                 </TableCell>
-                <TableCell>{mentor._count.studentsDatas}</TableCell>
-                <TableCell>{mentor._count.students}</TableCell>
+                <TableCell className="text-sm">
+                  <p>Assigned: {mentor._count.studentsDatas}</p>
+                  <p>Joined: {mentor._count.students}</p>
+                </TableCell>
                 <TableCell className="flex gap-2">
                   <Button onClick={() => setSelectedMentor(mentor)}>
                     Add Students

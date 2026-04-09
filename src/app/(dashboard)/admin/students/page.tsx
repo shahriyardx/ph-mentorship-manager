@@ -14,6 +14,7 @@ import {
   TableBody,
   TableCaption,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -121,6 +122,17 @@ const page = () => {
                     </TableRow>
                   ))}
                 </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      {selectedBatch && selectedMentor ? (
+                        <p>{assignedStudents.length} Students</p>
+                      ) : (
+                        <p>Select a mentor and batch to view students</p>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
               </Table>
             </TabsContent>
             <TabsContent value="joined">
@@ -139,6 +151,17 @@ const page = () => {
                     </TableRow>
                   ))}
                 </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      {selectedBatch && selectedMentor ? (
+                        <p>{joinedStudents.length} Students</p>
+                      ) : (
+                        <p>Select a mentor and batch to view students</p>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
               </Table>
             </TabsContent>
           </Tabs>
