@@ -40,7 +40,7 @@ const page = () => {
 
   const trpcUtils = trpc.useUtils()
 
-  const { data: channels, status } = useDiscord({ entity: "channels" })
+  const { data: channels } = useDiscord({ entity: "channels" })
   const { data: mentors, isPending, refetch } = trpc.admin.mentors.useQuery()
   const { mutate: deleteMentor } = trpc.admin.deleteMentor.useMutation({
     onSuccess: () => {

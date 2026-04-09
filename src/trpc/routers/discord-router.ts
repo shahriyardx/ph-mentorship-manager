@@ -1,5 +1,6 @@
 import { env } from "@/lib/env"
 import { createTRPCRouter, adminProcedure } from "@/trpc/init"
+import type { Channel } from "@/types"
 import { z } from "zod"
 
 const TEXTABLE_CHANNEL_TYPES = new Set([
@@ -31,7 +32,7 @@ export const discordRouter = createTRPCRouter({
       const response = await fetch(url, {
         headers: {
           Authorization: `Bot ${env.DISCORD_TOKEN}`,
-          "User-Agent": "CustomCommands (https://makeown.cc, 1.0)",
+          "User-Agent": "ProgrammingHero (https://programming-hero.com, 1.0)",
         },
       })
 
@@ -42,7 +43,7 @@ export const discordRouter = createTRPCRouter({
       if (input.entity === "channels") {
         return data
           .filter((c: { type: number }) => TEXTABLE_CHANNEL_TYPES.has(c.type))
-          .map((c) => ({
+          .map((c: Channel) => ({
             ...c,
             guild_id: settings?.serverId,
           }))
