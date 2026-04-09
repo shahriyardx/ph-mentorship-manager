@@ -12,6 +12,7 @@ export function useDiscord<T extends keyof EntityMap>({
   entity,
 }: {
   entity: T
+  guildId?: string
 }) {
   const { data, status } = trpc.discord.get.useQuery({ entity, guildId })
 
