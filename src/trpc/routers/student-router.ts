@@ -66,7 +66,7 @@ export const studentRouter = createTRPCRouter({
 
       await ctx.prisma.student.create({
         data: {
-          email: assignedStudent.email.toLowerCase(),
+          email: assignedStudent.email,
           userId: ctx.session.user.id,
           mentorId: assignedStudent.mentorId,
           batchId: assignedStudent.batchId,
