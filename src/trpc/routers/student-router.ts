@@ -36,7 +36,10 @@ export const studentRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const student = await ctx.prisma.student.findFirst({
         where: {
-          email: input.email,
+          email: {
+            equals: input.email,
+            mode: "insensitive",
+          },
         },
       })
 
@@ -48,7 +51,10 @@ export const studentRouter = createTRPCRouter({
 
       const assignedStudent = await ctx.prisma.studentsData.findFirst({
         where: {
-          email: input.email,
+          email: {
+            equals: input.email,
+            mode: "insensitive",
+          },
         },
       })
 
@@ -60,7 +66,7 @@ export const studentRouter = createTRPCRouter({
 
       await ctx.prisma.student.create({
         data: {
-          email: input.email,
+          email: assignedStudent.email.toLowerCase(),
           userId: ctx.session.user.id,
           mentorId: assignedStudent.mentorId,
           batchId: assignedStudent.batchId,
