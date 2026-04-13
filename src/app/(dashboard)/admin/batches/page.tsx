@@ -42,6 +42,7 @@ const page = () => {
       link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.base64}`
       link.download = data.filename
       link.click()
+      link.remove()
     },
   })
 
