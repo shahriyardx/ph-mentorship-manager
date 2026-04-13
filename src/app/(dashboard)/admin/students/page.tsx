@@ -19,10 +19,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Loader2 } from "lucide-react"
 
 const page = () => {
+  const [searchTerm, setSearchTerm] = useState<string>("")
   const [selectedMentor, setSelectedMentor] = useState<string | undefined>(
     undefined,
   )
@@ -32,15 +45,30 @@ const page = () => {
 
   const { data: mentors } = trpc.admin.mentors.useQuery()
   const { data: batches } = trpc.admin.batches.useQuery()
-  const { data: students } = trpc.admin.studentsByMentor.useQuery(
+  const { data: students, refetch } = trpc.admin.studentsByMentor.useQuery(
     {
       mentorId: selectedMentor,
       batchId: selectedBatch,
+      email: searchTerm,
     },
     {
-      enabled: !!selectedMentor && !!selectedBatch,
+      enabled: searchTerm.length > 0 || (!!selectedMentor && !!selectedBatch),
     },
   )
+
+  const { mutate: deleteStudentData, isPending: isDeletingStudentData } =
+    trpc.admin.deleteStudentData.useMutation({
+      onSuccess: () => {
+        refetch()
+      },
+    })
+
+  const { mutate: deleteStudent, isPending: isDeletingStudent } =
+    trpc.admin.deleteStudent.useMutation({
+      onSuccess: () => {
+        refetch()
+      },
+    })
 
   const { assignedStudents, joinedStudents } = students || {
     assignedStudents: [],
@@ -54,13 +82,18 @@ const page = () => {
 
         <div>
           <Tabs defaultValue="assigned">
-            <div className="flex justify-between">
+            <div className="flex flex-wrap gap-2 justify-between">
               <TabsList>
                 <TabsTrigger value="assigned">Assigned</TabsTrigger>
                 <TabsTrigger value="joined">Joined</TabsTrigger>
               </TabsList>
 
               <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Email"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
                 <Select onValueChange={setSelectedBatch}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a batch" />
@@ -73,20 +106,19 @@ const page = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedBatch && (
-                  <Select onValueChange={setSelectedMentor}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a mentor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {mentors?.map((mentor) => (
-                        <SelectItem key={mentor.id} value={mentor.id}>
-                          {mentor.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+
+                <Select onValueChange={setSelectedMentor}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a mentor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mentors?.map((mentor) => (
+                      <SelectItem key={mentor.id} value={mentor.id}>
+                        {mentor.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <TabsContent value="assigned">
@@ -100,7 +132,7 @@ const page = () => {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Assigned At</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -117,7 +149,36 @@ const page = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {student.createdAt.toLocaleDateString()}
+                        <Dialog>
+                          <DialogTrigger>
+                            <Button variant="destructive">Delete</Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>
+                                Are you absolutely sure?
+                              </DialogTitle>
+                              <DialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete the student data from
+                                database.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <Button
+                                variant="destructive"
+                                onClick={() =>
+                                  deleteStudentData({ id: student.id })
+                                }
+                              >
+                                {isDeletingStudentData && (
+                                  <Loader2 className="animate-spin" />
+                                )}
+                                Delete
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -141,6 +202,7 @@ const page = () => {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -148,6 +210,38 @@ const page = () => {
                     <TableRow key={student.id}>
                       <TableCell>{student.user.name}</TableCell>
                       <TableCell>{student.email}</TableCell>
+                      <TableCell>
+                        <Dialog>
+                          <DialogTrigger>
+                            <Button variant="destructive">Delete</Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>
+                                Are you absolutely sure?
+                              </DialogTitle>
+                              <DialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete the student data from
+                                database.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <Button
+                                variant="destructive"
+                                onClick={() =>
+                                  deleteStudent({ id: student.id })
+                                }
+                              >
+                                {isDeletingStudent && (
+                                  <Loader2 className="animate-spin" />
+                                )}
+                                Delete
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

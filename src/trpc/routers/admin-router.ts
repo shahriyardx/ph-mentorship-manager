@@ -275,6 +275,24 @@ export const adminRouter = createTRPCRouter({
     }))
     return mentorWithUser
   }),
+  deleteStudent: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.student.delete({
+        where: {
+          id: input.id,
+        },
+      })
+    }),
+  deleteStudentData: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.studentsData.delete({
+        where: {
+          id: input.id,
+        },
+      })
+    }),
   addStudents: adminProcedure
     .input(AddStudentSchema.extend({ mentorId: z.string() }))
     .mutation(async ({ input, ctx }) => {
@@ -303,9 +321,34 @@ export const adminRouter = createTRPCRouter({
       z.object({
         mentorId: z.string().optional(),
         batchId: z.string().optional(),
+        email: z.string().optional(),
       }),
     )
     .query(async ({ input, ctx }) => {
+      if (input.email) {
+        const assignedStudents = await ctx.prisma.studentsData.findMany({
+          where: {
+            email: {
+              contains: input.email,
+            },
+          },
+        })
+
+        const joinedStudents = await ctx.prisma.student.findMany({
+          where: {
+            email: {
+              contains: input.email,
+            },
+          },
+          include: {
+            user: true,
+          },
+        })
+        return {
+          assignedStudents: assignedStudents,
+          joinedStudents: joinedStudents,
+        }
+      }
       const assignedStudents = await ctx.prisma.studentsData.findMany({
         where: {
           batchId: input.batchId,
