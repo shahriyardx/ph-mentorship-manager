@@ -42,7 +42,6 @@ export const studentRouter = createTRPCRouter({
           },
         },
       })
-
       if (student)
         throw new TRPCError({
           code: "CONFLICT",
@@ -57,12 +56,31 @@ export const studentRouter = createTRPCRouter({
           },
         },
       })
-
       if (!assignedStudent)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No student found with this email",
         })
+
+      const account = await ctx.prisma.account.findFirst({
+        where: {
+          userId: ctx.session.user.id,
+        },
+      })
+      if (!account)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No account found for this user",
+        })
+
+      try {
+        await addUserToGuild(account.accessToken as string, account.accountId)
+      } catch {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to add you to the discord server. Please try again",
+        })
+      }
 
       await ctx.prisma.student.create({
         data: {
@@ -73,31 +91,18 @@ export const studentRouter = createTRPCRouter({
         },
       })
 
-      const account = await ctx.prisma.account.findFirst({
-        where: {
-          userId: ctx.session.user.id,
-        },
-      })
-
-      if (!account)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No account found for this user",
-        })
-
       const mentor = await ctx.prisma.mentor.findFirst({
         where: {
           id: assignedStudent.mentorId,
         },
       })
 
-      await addUserToGuild(account.accessToken as string, account.accountId)
-
       if (!mentor)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No mentor found for this student",
         })
+
       await giveChannelAccess(account.accountId, mentor.discordChannelId)
     }),
 })

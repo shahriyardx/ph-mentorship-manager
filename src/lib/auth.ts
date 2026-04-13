@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "./prisma"
 import { env } from "./env"
+import { ca } from "zod/v4/locales"
 
 export const getAuth = () => {
   return betterAuth({
@@ -42,19 +43,27 @@ export const addUserToGuild = async (
   discordUserId: string,
 ) => {
   const settings = await prisma.settings.findFirst()
-  await fetch(
-    `https://discord.com/api/v10/guilds/${settings?.serverId}/members/${discordUserId}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bot ${env.DISCORD_TOKEN}`,
-        "Content-Type": "application/json",
+  try {
+    const response = await fetch(
+      `https://discord.com/api/v10/guilds/${settings?.serverId}/members/${discordUserId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bot ${env.DISCORD_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          access_token: accessToken,
+        }),
       },
-      body: JSON.stringify({
-        access_token: accessToken,
-      }),
-    },
-  )
+    )
+
+    if (!response.ok) {
+      throw new Error()
+    }
+  } catch {
+    throw new Error()
+  }
 }
 
 export const giveChannelAccess = async (
