@@ -2,7 +2,6 @@ import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "./prisma"
 import { env } from "./env"
-import { ca } from "zod/v4/locales"
 
 export const getAuth = () => {
   return betterAuth({

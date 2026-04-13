@@ -5,6 +5,7 @@ import {
 } from "@/components/auth-components"
 import StudentJoinForm from "@/components/forms/student-join-form"
 import { GraduationCap } from "lucide-react"
+import { Suspense } from "react"
 
 const page = () => {
   return (
@@ -22,7 +23,9 @@ const page = () => {
 
       <div className="max-w-2xl mx-auto mt-10">
         <ShowIfNotAuthenticated>
-          <SignIn />
+          <Suspense fallback={<>Loading...</>}>
+            <SignIn />
+          </Suspense>
         </ShowIfNotAuthenticated>
 
         <ShowIfAuthenticated>
