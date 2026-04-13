@@ -363,6 +363,7 @@ export const adminRouter = createTRPCRouter({
       students.forEach((student) => {
         sheet.addRow({ email: student.email })
       })
+
       const buffer = await workbook.xlsx.writeBuffer()
       const base64 = Buffer.from(buffer).toString("base64")
       return {

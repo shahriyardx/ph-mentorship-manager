@@ -36,15 +36,14 @@ const page = () => {
       refetch()
     },
   })
-  const { mutate: exportStudents, isPending: isExporting } =
-    trpc.admin.exportStudents.useMutation({
-      onSuccess: (data) => {
-        const link = document.createElement("a")
-        link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.base64}`
-        link.download = data.filename
-        link.click()
-      },
-    })
+  const { mutate: exportStudents } = trpc.admin.exportStudents.useMutation({
+    onSuccess: (data) => {
+      const link = document.createElement("a")
+      link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.base64}`
+      link.download = data.filename
+      link.click()
+    },
+  })
 
   return (
     <DashboardPageWrapper pageTitle="Batches">
