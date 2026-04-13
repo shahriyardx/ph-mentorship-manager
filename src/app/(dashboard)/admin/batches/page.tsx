@@ -36,6 +36,15 @@ const page = () => {
       refetch()
     },
   })
+  const { mutate: exportStudents, isPending: isExporting } =
+    trpc.admin.exportStudents.useMutation({
+      onSuccess: (data) => {
+        const link = document.createElement("a")
+        link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.base64}`
+        link.download = data.filename
+        link.click()
+      },
+    })
 
   return (
     <DashboardPageWrapper pageTitle="Batches">
@@ -48,7 +57,8 @@ const page = () => {
               <TableHead>Name</TableHead>
               <TableHead>All Students</TableHead>
               <TableHead>Joined Students</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Export</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -57,7 +67,25 @@ const page = () => {
                 <TableCell>{batch.name}</TableCell>
                 <TableCell>{batch._count.students_data}</TableCell>
                 <TableCell>{batch._count.students}</TableCell>
-                <TableCell className="text-right space-x-1">
+                <TableCell className="space-x-2">
+                  <Button
+                    variant={"outline"}
+                    onClick={() =>
+                      exportStudents({ type: "joined", batchId: batch.id })
+                    }
+                  >
+                    Export Joined
+                  </Button>
+                  <Button
+                    variant={"outline"}
+                    onClick={() =>
+                      exportStudents({ type: "notJoined", batchId: batch.id })
+                    }
+                  >
+                    Export Not Joined
+                  </Button>
+                </TableCell>
+                <TableCell className="space-x-2">
                   {batch.isCurrent ? null : (
                     <Button
                       variant={"outline"}

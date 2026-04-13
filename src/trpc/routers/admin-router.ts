@@ -11,6 +11,7 @@ import {
 } from "../init"
 import z from "zod"
 import { env } from "@/lib/env"
+import ExcelJS from "exceljs"
 
 export const adminRouter = createTRPCRouter({
   settings: adminProcedure.query(async ({ ctx }) => {
@@ -323,6 +324,51 @@ export const adminRouter = createTRPCRouter({
       })
 
       return { assignedStudents, joinedStudents }
+    }),
+
+  exportStudents: adminProcedure
+    .input(
+      z.object({
+        type: z.enum(["joined", "notJoined"]),
+        mentorId: z.string().optional(),
+        batchId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const assignedStudents = await ctx.prisma.studentsData.findMany({
+        where: {
+          batchId: input.batchId,
+        },
+      })
+
+      const joinedStudents = await ctx.prisma.student.findMany({
+        where: {
+          batchId: input.batchId,
+        },
+      })
+
+      const notJoinedStudents = assignedStudents.filter(
+        (student) => !joinedStudents.some((j) => j.email === student.email),
+      )
+
+      const students =
+        input.type === "joined" ? joinedStudents : notJoinedStudents
+
+      const workbook = new ExcelJS.Workbook()
+      const sheet = workbook.addWorksheet("Emails")
+      sheet.columns = [{ header: "email", key: "email", width: 30 }]
+      sheet.getRow(1).font = { bold: true, name: "Arial" }
+      sheet.getRow(1).alignment = { horizontal: "center" }
+
+      students.forEach((student) => {
+        sheet.addRow({ email: student.email })
+      })
+      const buffer = await workbook.xlsx.writeBuffer()
+      const base64 = Buffer.from(buffer).toString("base64")
+      return {
+        base64,
+        filename: `students-${input.type}.xlsx`,
+      }
     }),
 })
 
