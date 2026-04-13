@@ -330,8 +330,7 @@ export const adminRouter = createTRPCRouter({
     .input(
       z.object({
         type: z.enum(["joined", "notJoined"]),
-        mentorId: z.string().optional(),
-        batchId: z.string().optional(),
+        batchId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
