@@ -90,6 +90,8 @@ const StudentJoinForm = () => {
                       aria-invalid={fieldState.invalid}
                       placeholder="Your course email"
                       className="px-6 py-6"
+                      autoComplete="off"
+                      type="email"
                     />
 
                     {fieldState.invalid && (

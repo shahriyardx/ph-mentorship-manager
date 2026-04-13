@@ -56,11 +56,15 @@ export const studentRouter = createTRPCRouter({
           },
         },
       })
-      if (!assignedStudent)
+
+      console.log(assignedStudent)
+
+      if (!assignedStudent) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No student found with this email",
         })
+      }
 
       const account = await ctx.prisma.account.findFirst({
         where: {
