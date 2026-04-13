@@ -22,6 +22,15 @@ export const getAuth = () => {
         clientId: env.DISCORD_CLIENT_ID,
         clientSecret: env.DICSORD_CLIENT_SECRET,
         scope: ["identify", "email", "guilds.join"],
+        mapProfileToUser: (profile) => {
+          if (!profile.email) return { email: null }
+
+          return {
+            email: profile.email,
+            name: profile.username,
+            avatar: profile.avatar,
+          }
+        },
       },
     },
   })
