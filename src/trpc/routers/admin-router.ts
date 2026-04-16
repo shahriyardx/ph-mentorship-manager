@@ -73,8 +73,10 @@ export const adminRouter = createTRPCRouter({
       const batch = await ctx.prisma.batch.create({
         data: {
           name: input.name,
+          discordServerId: input.discordServerId,
         },
       })
+
       const settings = await ctx.prisma.settings.findFirst()
       if (!settings) {
         await ctx.prisma.settings.create({

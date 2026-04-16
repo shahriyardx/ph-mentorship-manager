@@ -90,27 +90,37 @@ model Verification {
 }
 
 model Batch {
-  id   String @id @default(cuid())
-  name String
+  id              String  @id @default(cuid())
+  name            String
+  discordServerId String?
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   students      Student[]
   students_data StudentsData[]
+  mentors       Mentor[]
 
   @@map("batch")
 }
 
 model Mentor {
-  id               String    @id @default(cuid())
+  id String @id @default(cuid())
+
+  batchId               String?
+  categoryId            String?
+  announcementChannelId String?
+  discussionChannelId   String?
+
+  batch  Batch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
   discordChannelId String
   students         Student[]
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId           String    @unique
+  studentsDatas    StudentsData[]
 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  studentsDatas StudentsData[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("mentor")
 }

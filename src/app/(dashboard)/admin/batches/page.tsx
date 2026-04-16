@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2 } from "lucide-react"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
+import { DeleteBatchDialog } from "./delete-batch-dialog"
 
 const page = () => {
   const { data: batches, isPending, refetch } = trpc.admin.batches.useQuery()
@@ -94,30 +95,12 @@ const page = () => {
                       Set as Current
                     </Button>
                   )}
-                  <Dialog>
-                    <DialogTrigger>
-                      <Button variant="destructive">Delete</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Are you absolutely sure?</DialogTitle>
-                        <DialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete the batch and remove all associated data.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <Button
-                          disabled={isDeleting}
-                          variant="destructive"
-                          onClick={() => deleteBatch({ id: batch.id })}
-                        >
-                          {isDeleting && <Loader2 className="animate-spin" />}
-                          Delete
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+
+                  <DeleteBatchDialog
+                    batchId={batch.id}
+                    isDeleting={isDeleting}
+                    deleteBatch={deleteBatch}
+                  />
                 </TableCell>
               </TableRow>
             ))}

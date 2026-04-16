@@ -2,6 +2,7 @@ import z from "zod"
 
 export const BatchSchema = z.object({
   name: z.string().min(1, { message: "Batch name is required" }),
+  discordServerId: z.string().min(1, { message: "Discord server is required" }),
 })
 
 export const MentorSchema = z.object({

@@ -108,46 +108,46 @@ const page = () => {
                     </Button>
                   )}
 
-                  {user.role === "user" && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant={"outline"}>Make Mentor</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Make Mentor</DialogTitle>
-                          <DialogDescription>
-                            You are about to make {user.name} a mentor.
-                          </DialogDescription>
-                        </DialogHeader>
+                  {/*{user.role === "user" && (*/}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant={"outline"}>Make Mentor</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Make Mentor</DialogTitle>
+                        <DialogDescription>
+                          You are about to make {user.name} a mentor.
+                        </DialogDescription>
+                      </DialogHeader>
 
-                        <AddMentorFormBase
-                          userId={user.id}
-                          onSubmit={() => setIsMakingMentor(true)}
-                          onSuccess={() => {
-                            setIsMakingMentor(false)
-                            refetch()
-                          }}
-                        />
+                      <AddMentorFormBase
+                        userId={user.id}
+                        onSubmit={() => setIsMakingMentor(true)}
+                        onSuccess={() => {
+                          setIsMakingMentor(false)
+                          refetch()
+                        }}
+                      />
 
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button variant={"outline"}>Cancel</Button>
-                          </DialogClose>
-                          <Button
-                            disabled={isMakingMentor}
-                            type="submit"
-                            form="add-mentor-form"
-                          >
-                            {isMakingMentor && (
-                              <Loader2 className="animate-spin" />
-                            )}
-                            Submit
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant={"outline"}>Cancel</Button>
+                        </DialogClose>
+                        <Button
+                          disabled={isMakingMentor}
+                          type="submit"
+                          form="add-mentor-form"
+                        >
+                          {isMakingMentor && (
+                            <Loader2 className="animate-spin" />
+                          )}
+                          Submit
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                  {/*)}*/}
                 </TableCell>
               </TableRow>
             ))}

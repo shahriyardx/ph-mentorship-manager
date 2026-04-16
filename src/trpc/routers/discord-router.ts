@@ -1,3 +1,4 @@
+import { getServers, getTextChannels } from "@/lib/discord"
 import { env } from "@/lib/env"
 import { createTRPCRouter, adminProcedure } from "@/trpc/init"
 import type { Channel } from "@/types"
@@ -12,6 +13,20 @@ const TEXTABLE_CHANNEL_TYPES = new Set([
 ])
 
 export const discordRouter = createTRPCRouter({
+  getServers: adminProcedure.query(async () => {
+    const servers = await getServers()
+    return servers
+  }),
+  getTextChannels: adminProcedure
+    .input(
+      z.object({
+        guildId: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const textChennels = await getTextChannels(input.guildId)
+      return textChennels
+    }),
   get: adminProcedure
     .input(
       z.object({
