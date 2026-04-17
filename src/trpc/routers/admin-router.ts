@@ -1,7 +1,7 @@
 import {
+  AddMentorSchema,
   AddStudentSchema,
   BatchSchema,
-  MentorSchema,
   SettingsSchema,
 } from "@/schema"
 import {
@@ -12,6 +12,8 @@ import {
 import z from "zod"
 import { env } from "@/lib/env"
 import ExcelJS from "exceljs"
+import { createMentor } from "../utils"
+import { TRPCError } from "@trpc/server"
 
 export const adminRouter = createTRPCRouter({
   settings: adminProcedure.query(async ({ ctx }) => {
@@ -30,13 +32,26 @@ export const adminRouter = createTRPCRouter({
         },
       })
     }),
-  removeAdmin: adminProcedure
+  makeMentor: adminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await ctx.prisma.user.update({
         where: {
           id: input.userId,
-          role: { in: ["admin"] },
+          role: { in: ["user"] },
+        },
+        data: {
+          role: "mentor",
+        },
+      })
+    }),
+  makeUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.user.update({
+        where: {
+          id: input.userId,
+          role: { notIn: ["superadmin"] },
         },
         data: {
           role: "user",
@@ -156,60 +171,41 @@ export const adminRouter = createTRPCRouter({
     })
   }),
   addMentor: adminProcedure
-    .input(MentorSchema)
+    .input(AddMentorSchema)
     .mutation(async ({ input, ctx }) => {
-      const user = await ctx.prisma.user.findUnique({
-        where: {
-          id: input.mentorId,
-        },
-      })
-      if (!user) {
-        throw new Error("User not found")
-      }
+      input.mentors.forEach(async (mentorUserId) => {
+        const user = await ctx.prisma.user.findUnique({
+          where: {
+            id: mentorUserId,
+          },
+        })
 
-      const mentor = await ctx.prisma.mentor.findUnique({
-        where: {
-          userId: input.mentorId,
-        },
-      })
+        const batch = await ctx.prisma.batch.findFirst({
+          where: {
+            id: input.batchId,
+          },
+        })
 
-      if (mentor) {
-        throw new Error("Mentor already exists")
-      }
-
-      await ctx.prisma.mentor.create({
-        data: {
-          discordChannelId: input.discordChannelId,
-          userId: input.mentorId,
-        },
-      })
-
-      await ctx.prisma.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          appliedForMentor: false,
-          role: user.role === "user" ? "mentor" : user.role,
-        },
-      })
-
-      const account = await ctx.prisma.account.findFirst({
-        where: {
-          userId: input.mentorId,
-        },
-      })
-
-      if (account) {
-        try {
-          await sendDiscordDM(
-            account.accountId,
-            `Your mentorship application has been approved. Go to ${env.BETTER_AUTH_URL}/mentor to access your dashboard`,
-          )
-        } catch {
-          console.error("Failed to send Discord DM")
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          })
         }
-      }
+
+        if (!batch) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Batch not found",
+          })
+        }
+
+        await createMentor({
+          userId: mentorUserId,
+          batchId: batch.id,
+          categoryName: `${user.name.trim().replaceAll(" ", "-")}-squad`,
+        })
+      })
     }),
   deleteMentor: adminProcedure
     .input(z.object({ id: z.string() }))
@@ -247,35 +243,15 @@ export const adminRouter = createTRPCRouter({
     }),
 
   mentors: adminProcedure.query(async ({ ctx }) => {
-    const settings = await ctx.prisma.settings.findFirst()
-    const batchId = settings ? settings.currentBatchId : ""
-
-    const mentors = await ctx.prisma.mentor.findMany({
-      include: {
-        user: true,
-        _count: {
-          select: {
-            studentsDatas: {
-              where: {
-                batchId: batchId,
-              },
-            },
-            students: {
-              where: {
-                batchId: batchId,
-              },
-            },
-          },
+    const mentors = await ctx.prisma.user.findMany({
+      where: {
+        role: {
+          in: ["mentor", "admin", "superadmin"],
         },
       },
     })
 
-    const mentorWithUser = mentors.map((mentor) => ({
-      ...mentor,
-      name: mentor.user.name,
-      email: mentor.user.email,
-    }))
-    return mentorWithUser
+    return mentors
   }),
   deleteStudent: adminProcedure
     .input(z.object({ id: z.string() }))

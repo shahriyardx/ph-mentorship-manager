@@ -11,18 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Loader2 } from "lucide-react"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
 import { DeleteBatchDialog } from "./delete-batch-dialog"
+import { AddMentor } from "./add-mentor"
 
 const page = () => {
   const { data: batches, isPending, refetch } = trpc.admin.batches.useQuery()
@@ -95,6 +86,8 @@ const page = () => {
                       Set as Current
                     </Button>
                   )}
+
+                  <AddMentor batchId={batch.id} />
 
                   <DeleteBatchDialog
                     batchId={batch.id}

@@ -8,7 +8,6 @@ import {
 } from "discord-api-types/v10"
 
 type CreateMentorChannelsInput = {
-  guildId: string
   categoryName: string
   userId: string
   batchId: string
@@ -39,6 +38,13 @@ export const createMentor = async ({
   })
 
   if (mentor) return mentor
+
+  const mentorWithoutBatch = await prisma.mentor.findFirst({
+    where: {
+      userId: userId,
+      batchId: null,
+    },
+  })
 
   const userDiscordId = await getUserDiscordId(userId)
   const batch = await prisma.batch.findFirst({
@@ -93,6 +99,31 @@ export const createMentor = async ({
     permission_overwrites: [everyonePermission, mentorPermission],
   })
 
+  if (mentorWithoutBatch) {
+    await prisma.mentor.update({
+      where: {
+        userId: userId,
+      },
+      data: {
+        batchId,
+        categoryId: category.id,
+        announcementChannelId: announcements.id,
+        discussionChannelId: discussions.id,
+        discordChannelId: "",
+      },
+    })
+  } else {
+    await prisma.mentor.create({
+      data: {
+        userId: userId,
+        batchId,
+        categoryId: category.id,
+        announcementChannelId: announcements.id,
+        discussionChannelId: discussions.id,
+        discordChannelId: "",
+      },
+    })
+  }
   await prisma.mentor.create({
     data: {
       userId: userId,

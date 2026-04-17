@@ -23,3 +23,10 @@ export const SettingsSchema = z.object({
   serverId: z.string().min(1),
   dashboardLogChannelId: z.string().min(1),
 })
+
+export const AddMentorSchema = z.object({
+  batchId: z.string().optional(),
+  mentors: z
+    .array(z.string())
+    .min(1, { message: "At least one mentor is required" }),
+})

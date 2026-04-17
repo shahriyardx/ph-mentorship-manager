@@ -28,7 +28,6 @@ import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
 
 const page = () => {
   const [search, setSearch] = useState("")
-  const [isMakingMentor, setIsMakingMentor] = useState(false)
 
   const { data: users, isPending, refetch } = trpc.admin.users.useQuery()
   const { mutate: makeAdmin, isPending: isMakingAdmin } =
@@ -37,8 +36,15 @@ const page = () => {
         refetch()
       },
     })
-  const { mutate: removeAdmin, isPending: isRemovingAdmin } =
-    trpc.admin.removeAdmin.useMutation({
+  const { mutate: makeMentor, isPending: isMakingMentor } =
+    trpc.admin.makeMentor.useMutation({
+      onSuccess: () => {
+        refetch()
+      },
+    })
+
+  const { mutate: makeUser, isPending: isMakingUser } =
+    trpc.admin.makeUser.useMutation({
       onSuccess: () => {
         refetch()
       },
@@ -97,57 +103,29 @@ const page = () => {
                       {isMakingAdmin && <Loader2 className="animate-spin" />}
                       Make Admin
                     </Button>
-                  ) : (
+                  ) : null}
+
+                  {user.role === "user" && (
                     <Button
-                      variant={"destructive"}
-                      disabled={isRemovingAdmin}
-                      onClick={() => removeAdmin({ userId: user.id })}
+                      variant={"outline"}
+                      disabled={isMakingMentor}
+                      onClick={() => makeMentor({ userId: user.id })}
                     >
-                      {isRemovingAdmin && <Loader2 className="animate-spin" />}
-                      Remove Admin
+                      {isMakingMentor && <Loader2 className="animate-spin" />}
+                      Make Mentor
                     </Button>
                   )}
 
-                  {/*{user.role === "user" && (*/}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant={"outline"}>Make Mentor</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Make Mentor</DialogTitle>
-                        <DialogDescription>
-                          You are about to make {user.name} a mentor.
-                        </DialogDescription>
-                      </DialogHeader>
-
-                      <AddMentorFormBase
-                        userId={user.id}
-                        onSubmit={() => setIsMakingMentor(true)}
-                        onSuccess={() => {
-                          setIsMakingMentor(false)
-                          refetch()
-                        }}
-                      />
-
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button variant={"outline"}>Cancel</Button>
-                        </DialogClose>
-                        <Button
-                          disabled={isMakingMentor}
-                          type="submit"
-                          form="add-mentor-form"
-                        >
-                          {isMakingMentor && (
-                            <Loader2 className="animate-spin" />
-                          )}
-                          Submit
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                  {/*)}*/}
+                  {user.role !== "user" && (
+                    <Button
+                      variant={"outline"}
+                      disabled={isMakingUser}
+                      onClick={() => makeUser({ userId: user.id })}
+                    >
+                      {isMakingUser && <Loader2 className="animate-spin" />}
+                      Make User
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
