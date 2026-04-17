@@ -49,14 +49,6 @@ export function NavAdmin() {
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton isActive={pathname === "/admin/mentors"} asChild>
-            <Link href="/admin/mentors">
-              <ShieldUser />
-              Mentors
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
 
         <SidebarMenuItem>
           <SidebarMenuButton isActive={pathname === "/admin/users"} asChild>

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
 import { DeleteBatchDialog } from "./delete-batch-dialog"
 import { AddMentor } from "./add-mentor"
+import Link from "next/link"
 
 const page = () => {
   const { data: batches, isPending, refetch } = trpc.admin.batches.useQuery()
@@ -87,8 +88,10 @@ const page = () => {
                     </Button>
                   )}
 
+                  <Button asChild>
+                    <Link href={`/admin/batches/${batch.id}`}>View Batch</Link>
+                  </Button>
                   <AddMentor batchId={batch.id} />
-
                   <DeleteBatchDialog
                     batchId={batch.id}
                     isDeleting={isDeleting}

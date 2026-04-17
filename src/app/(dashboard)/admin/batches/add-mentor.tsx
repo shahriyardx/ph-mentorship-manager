@@ -48,8 +48,8 @@ export const AddMentor = ({ batchId }: { batchId: string }) => {
 
   return (
     <Dialog>
-      <DialogTrigger>
-        <Button>Add Mentors</Button>
+      <DialogTrigger asChild>
+        <Button variant={"outline"}>Add Mentors</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
