@@ -43,7 +43,12 @@ const page = () => {
     undefined,
   )
 
-  const { data: mentors } = trpc.admin.mentors.useQuery()
+  const { data: mentors } = trpc.batch.mentors.useQuery(
+    { batchId: selectedBatch as string },
+    {
+      enabled: !!selectedBatch,
+    },
+  )
   const { data: batches } = trpc.admin.batches.useQuery()
   const { data: students, refetch } = trpc.admin.studentsByMentor.useQuery(
     {
@@ -114,7 +119,7 @@ const page = () => {
                   <SelectContent>
                     {mentors?.map((mentor) => (
                       <SelectItem key={mentor.id} value={mentor.id}>
-                        {mentor.name}
+                        {mentor.user.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

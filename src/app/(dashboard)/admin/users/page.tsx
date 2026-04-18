@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { useMemo, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
+import ConditionalRender from "@/components/conditional-render"
 
 const page = () => {
   const [search, setSearch] = useState("")
@@ -81,40 +82,50 @@ const page = () => {
                   {user.role === "superadmin" ? "admin" : user.role}
                 </TableCell>
                 <TableCell className="flex items-center gap-2">
-                  {user.role === "superadmin" ? (
+                  <ConditionalRender condition={user.role === "superadmin"}>
                     <span className="text-muted-foreground">Not available</span>
-                  ) : ["mentor", "user"].includes(user.role) ? (
-                    <Button
-                      variant={"outline"}
-                      disabled={isMakingAdmin}
-                      onClick={() => makeAdmin({ userId: user.id })}
-                    >
-                      {isMakingAdmin && <Loader2 className="animate-spin" />}
-                      Make Admin
-                    </Button>
-                  ) : null}
+                  </ConditionalRender>
 
-                  {user.role === "user" && (
-                    <Button
-                      variant={"outline"}
-                      disabled={isMakingMentor}
-                      onClick={() => makeMentor({ userId: user.id })}
-                    >
-                      {isMakingMentor && <Loader2 className="animate-spin" />}
-                      Make Mentor
-                    </Button>
-                  )}
+                  <ConditionalRender condition={user.role !== "superadmin"}>
+                    <ConditionalRender condition={user.role !== "admin"}>
+                      <Button
+                        variant={"outline"}
+                        disabled={isMakingAdmin}
+                        onClick={() => makeAdmin({ userId: user.id })}
+                      >
+                        {isMakingAdmin && <Loader2 className="animate-spin" />}
+                        Make Admin
+                      </Button>
+                    </ConditionalRender>
 
-                  {user.role !== "user" && (
-                    <Button
-                      variant={"outline"}
-                      disabled={isMakingUser}
-                      onClick={() => makeUser({ userId: user.id })}
+                    <ConditionalRender
+                      condition={
+                        user.role === "admin" || user.role === "mentor"
+                      }
                     >
-                      {isMakingUser && <Loader2 className="animate-spin" />}
-                      Make User
-                    </Button>
-                  )}
+                      <Button
+                        variant={"outline"}
+                        disabled={isMakingUser}
+                        onClick={() => makeUser({ userId: user.id })}
+                      >
+                        {isMakingUser && <Loader2 className="animate-spin" />}
+                        Make User
+                      </Button>
+                    </ConditionalRender>
+
+                    <ConditionalRender
+                      condition={user.role === "user" || user.role === "admin"}
+                    >
+                      <Button
+                        variant={"outline"}
+                        disabled={isMakingMentor}
+                        onClick={() => makeMentor({ userId: user.id })}
+                      >
+                        {isMakingMentor && <Loader2 className="animate-spin" />}
+                        Make Mentor
+                      </Button>
+                    </ConditionalRender>
+                  </ConditionalRender>
                 </TableCell>
               </TableRow>
             ))}
