@@ -10,7 +10,6 @@ import {
   createTRPCRouter,
 } from "../init"
 import z from "zod"
-import { env } from "@/lib/env"
 import ExcelJS from "exceljs"
 import { createMentor } from "../utils"
 import { TRPCError } from "@trpc/server"
@@ -272,7 +271,9 @@ export const adminRouter = createTRPCRouter({
       })
     }),
   addStudents: adminProcedure
-    .input(AddStudentSchema.extend({ mentorId: z.string() }))
+    .input(
+      AddStudentSchema.extend({ mentorId: z.string(), batchId: z.string() }),
+    )
     .mutation(async ({ input, ctx }) => {
       const studentEmails =
         input.emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) ??
@@ -392,49 +393,3 @@ export const adminRouter = createTRPCRouter({
       }
     }),
 })
-
-async function sendDiscordDM(userId: string, message: string) {
-  const headers = {
-    Authorization: `Bot ${env.DISCORD_TOKEN}`,
-    "Content-Type": "application/json",
-    "User-Agent": "ProgrammingHero (https://programming-hero.com, 1.0)",
-  }
-
-  // Step 1: Create a DM channel with the user
-  const dmChannelResponse = await fetch(
-    "https://discord.com/api/v10/users/@me/channels",
-    {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ recipient_id: userId }),
-    },
-  )
-
-  if (!dmChannelResponse.ok) {
-    const error = await dmChannelResponse.json()
-    throw new Error(
-      `Failed to create DM channel: ${error.message || dmChannelResponse.statusText}`,
-    )
-  }
-
-  const dmChannel = await dmChannelResponse.json()
-
-  // Step 2: Send the message to the newly created DM channel
-  const messageResponse = await fetch(
-    `https://discord.com/api/v10/channels/${dmChannel.id}/messages`,
-    {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ content: message }),
-    },
-  )
-
-  if (!messageResponse.ok) {
-    const error = await messageResponse.json()
-    throw new Error(
-      `Failed to send message: ${error.message || messageResponse.statusText}`,
-    )
-  }
-
-  return await messageResponse.json()
-}

@@ -11,7 +11,6 @@ export const MentorSchema = z.object({
 })
 
 export const AddStudentSchema = z.object({
-  batchId: z.string().min(1),
   emails: z.string().min(1),
 })
 
@@ -29,4 +28,9 @@ export const AddMentorSchema = z.object({
   mentors: z
     .array(z.string())
     .min(1, { message: "At least one mentor is required" }),
+})
+
+export const BatchSetDiscordSchema = z.object({
+  batchId: z.string().min(1),
+  discordServerId: z.string().min(1),
 })

@@ -1,6 +1,7 @@
 import z from "zod"
 import { adminProcedure, createTRPCRouter } from "../init"
 import { getServer } from "@/lib/discord"
+import { BatchSetDiscordSchema } from "@/schema"
 
 export const batchRouter = createTRPCRouter({
   batchInfo: adminProcedure
@@ -14,6 +15,10 @@ export const batchRouter = createTRPCRouter({
         where: { id: input.batchId },
       })
 
+      if (!batch) {
+        return null
+      }
+
       const assignedStudents = await ctx.prisma.studentsData.findMany({
         where: { batchId: input.batchId },
       })
@@ -25,10 +30,13 @@ export const batchRouter = createTRPCRouter({
         },
       })
 
-      const discord = await getServer(batch?.discordServerId as string)
+      const discord = batch?.discordServerId
+        ? await getServer(batch?.discordServerId)
+        : null
       const mentors = await ctx.prisma.mentor.findMany({
         where: { batchId: input.batchId },
       })
+
       return {
         ...batch,
         discord,
@@ -48,9 +56,33 @@ export const batchRouter = createTRPCRouter({
         where: { batchId: input.batchId },
         include: {
           user: true,
+          _count: {
+            select: {
+              studentsDatas: {
+                where: {
+                  batchId: input.batchId,
+                },
+              },
+              students: {
+                where: {
+                  batchId: input.batchId,
+                },
+              },
+            },
+          },
         },
       })
 
       return mentors
+    }),
+  setDiscord: adminProcedure
+    .input(BatchSetDiscordSchema)
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.batch.update({
+        where: { id: input.batchId },
+        data: {
+          discordServerId: input.discordServerId,
+        },
+      })
     }),
 })
