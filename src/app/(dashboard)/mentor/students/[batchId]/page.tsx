@@ -26,16 +26,50 @@ const page = () => {
     [data],
   )
 
+  const { mutate: exportStudents } = trpc.mentor.exportStudents.useMutation({
+    onSuccess: (data) => {
+      const link = document.createElement("a")
+      link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.base64}`
+      link.download = data.filename
+      link.click()
+      link.remove()
+    },
+  })
+
   return (
     <DashboardPageWrapper pageTitle="Students">
       <div>
         {isPending && <p className="mb-2">Loading...</p>}
 
         <Tabs defaultValue="assigned">
-          <TabsList>
-            <TabsTrigger value="assigned">Assigned</TabsTrigger>
-            <TabsTrigger value="joined">Joined</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-between items-center">
+            <TabsList>
+              <TabsTrigger value="assigned">Assigned</TabsTrigger>
+              <TabsTrigger value="joined">Joined</TabsTrigger>
+            </TabsList>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant={"outline"}
+                onClick={() =>
+                  exportStudents({ type: "joined", batchId: batchId as string })
+                }
+              >
+                Export Joined
+              </Button>
+              <Button
+                variant={"outline"}
+                onClick={() =>
+                  exportStudents({
+                    type: "notJoined",
+                    batchId: batchId as string,
+                  })
+                }
+              >
+                Export Not Joined
+              </Button>
+            </div>
+          </div>
           <TabsContent value="assigned">
             <Table className="border-2">
               <TableHeader>
