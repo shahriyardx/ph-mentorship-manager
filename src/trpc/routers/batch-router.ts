@@ -30,12 +30,6 @@ export const batchRouter = createTRPCRouter({
         },
       })
 
-      const unmigratedStudents = await ctx.prisma.student.count({
-        where: {
-          hasGivenAccess: false,
-        },
-      })
-
       const discord = batch?.discordServerId
         ? await getServer(batch?.discordServerId)
         : null
@@ -49,7 +43,6 @@ export const batchRouter = createTRPCRouter({
         assignedStudents: assignedStudents.length,
         joinedStudents: joinedStudents.length,
         mentors: mentors.length,
-        unmigratedStudents,
       }
     }),
   mentors: adminProcedure

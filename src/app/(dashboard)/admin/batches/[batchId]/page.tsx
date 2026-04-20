@@ -2,49 +2,19 @@
 
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { trpc, trpcVanilla } from "@/trpc/client"
+import { trpc } from "@/trpc/client"
 import Link from "next/link"
 import { Mentors } from "./mentors"
 import { Button } from "@/components/ui/button"
 import { useParams } from "@/hooks/use-params"
 import SetBatchDialog from "./set-batch-dialog"
-import { useState } from "react"
-import { Loader2 } from "lucide-react"
-
-type MigrationProgress = {
-  migrated: number
-  total: number
-}
 
 const page = () => {
-  const [isMigrating, setIsMigrating] = useState(false)
-  const [progress, setProgress] = useState<MigrationProgress>({
-    migrated: 0,
-    total: 0,
-  })
   const { batchId } = useParams()
 
   const { data: batch, refetch } = trpc.batch.batchInfo.useQuery({
     batchId: batchId as string,
   })
-
-  const handleMigrate = async () => {
-    setIsMigrating(true)
-
-    try {
-      const stream = await trpcVanilla.batch.migrateStudents.mutate({
-        batchId: batchId as string,
-      })
-      for await (const update of stream) {
-        setProgress(update)
-        if (update.migrated === update.total) {
-          refetch()
-        }
-      }
-    } finally {
-      setIsMigrating(false)
-    }
-  }
 
   const { mutate: exportStudents } = trpc.admin.exportStudents.useMutation({
     onSuccess: (data) => {
@@ -125,15 +95,6 @@ const page = () => {
         >
           Export Not Joined
         </Button>
-
-        {batch.unmigratedStudents > 0 && (
-          <Button onClick={() => handleMigrate()}>
-            {isMigrating && <Loader2 className="animate-spin" />}
-            {isMigrating
-              ? `Migrated ${progress?.migrated}/${progress?.total}`
-              : `Migrate ${batch.unmigratedStudents} Students`}
-          </Button>
-        )}
       </div>
 
       <Mentors className="mt-5" />
