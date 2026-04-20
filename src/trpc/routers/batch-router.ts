@@ -159,9 +159,12 @@ export const batchRouter = createTRPCRouter({
               hasGivenAccess: true,
             },
           })
+
+          await new Promise((res) => setTimeout(res, 250))
         } catch (err) {
           console.error(err)
         }
+
         migrated++
         yield { migrated, total }
       }
