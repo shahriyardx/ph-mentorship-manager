@@ -131,7 +131,7 @@ const page = () => {
             {isMigrating && <Loader2 className="animate-spin" />}
             {isMigrating
               ? `Migrated ${progress?.migrated}/${progress?.total}`
-              : "Migrate Students"}
+              : `Migrate ${batch.unmigratedStudents} Students`}
           </Button>
         )}
       </div>

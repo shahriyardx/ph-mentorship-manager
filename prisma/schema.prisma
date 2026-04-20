@@ -163,10 +163,11 @@ model StudentsData {
 }
 
 model Settings {
-  id                    String @id @default(cuid())
-  currentBatchId        String @default("")
-  serverId              String @default("")
-  dashboardLogChannelId String @default("")
+  id                    String  @id @default(cuid())
+  currentBatchId        String  @default("")
+  serverId              String  @default("")
+  dashboardLogChannelId String  @default("")
+  maintenanceMode       Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

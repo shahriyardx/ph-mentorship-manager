@@ -4,10 +4,18 @@ import {
   SignIn,
 } from "@/components/auth-components"
 import StudentJoinForm from "@/components/forms/student-join-form"
+import { trpc } from "@/trpc/server"
 import { GraduationCap } from "lucide-react"
+import { redirect } from "next/navigation"
 import { Suspense } from "react"
 
-const page = () => {
+const page = async () => {
+  const settings = await trpc.admin.settings()
+
+  if (settings?.maintenanceMode) {
+    redirect("/maintenance")
+  }
+
   return (
     <div>
       <div className="flex justify-center items-center flex-col gap-5">
