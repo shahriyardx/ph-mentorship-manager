@@ -17,7 +17,6 @@ const StudentJoinForm = () => {
   })
 
   const { data: studentInfo, refetch } = trpc.student.getStudentInfo.useQuery()
-
   const { mutate: joinMentorship } = trpc.student.joinMentorship.useMutation({
     onSuccess: () => {
       refetch()
@@ -46,7 +45,7 @@ const StudentJoinForm = () => {
                 asChild
               >
                 <Link
-                  href={`https://discord.com/channels/${studentInfo?.serverId}/${student.mentor?.discordChannelId}`}
+                  href={`https://discord.com/channels/${studentInfo?.serverId}/${student.mentor?.discussionChannelId}`}
                 >
                   View Channel
                 </Link>

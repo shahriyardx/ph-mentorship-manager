@@ -5,13 +5,7 @@ import { addRoleToUser, addUserToGuild } from "@/lib/discord"
 import { prisma } from "@/lib/prisma"
 
 export const studentRouter = createTRPCRouter({
-  settings: protectedProcedure.query(async ({ ctx }) => {
-    const settings = await ctx.prisma.settings.findFirst()
-    return settings
-  }),
   getStudentInfo: protectedProcedure.query(async ({ ctx }) => {
-    const settings = await ctx.prisma.settings.findFirst()
-
     const student = await ctx.prisma.student.findFirst({
       where: {
         userId: ctx.session.user.id,
@@ -25,9 +19,14 @@ export const studentRouter = createTRPCRouter({
       },
     })
 
-    return { student, serverId: settings?.serverId ?? "" }
-  }),
+    const batch = await ctx.prisma.batch.findFirst({
+      where: {
+        id: student?.batchId,
+      },
+    })
 
+    return { student, serverId: batch?.discordServerId ?? "" }
+  }),
   joinMentorship: protectedProcedure
     .input(
       z.object({

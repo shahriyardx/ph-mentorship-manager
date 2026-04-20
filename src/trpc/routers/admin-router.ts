@@ -10,9 +10,6 @@ import { createMentor } from "../utils"
 import { TRPCError } from "@trpc/server"
 
 export const adminRouter = createTRPCRouter({
-  settings: adminProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.settings.findFirst()
-  }),
   makeAdmin: adminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
