@@ -3,7 +3,7 @@ import {
   adminOrMentorProcedure,
   adminProcedure,
   createTRPCRouter,
-  protectedProcedure,
+  publicProcedure,
 } from "../init"
 import z from "zod"
 import ExcelJS from "exceljs"
@@ -11,7 +11,7 @@ import { createMentor } from "../utils"
 import { TRPCError } from "@trpc/server"
 
 export const adminRouter = createTRPCRouter({
-  settings: protectedProcedure.query(async ({ ctx }) => {
+  settings: publicProcedure.query(async ({ ctx }) => {
     return await ctx.prisma.settings.findFirst()
   }),
   toggleMaintenanceMode: adminProcedure.mutation(async ({ ctx }) => {
