@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -17,6 +16,7 @@ const page = async () => {
   if (!settings.maintenanceMode) {
     redirect("/")
   }
+
   return (
     <div className="grid place-items-center min-h-svh">
       <Card className="max-w-md">
