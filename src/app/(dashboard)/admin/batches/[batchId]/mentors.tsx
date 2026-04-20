@@ -76,7 +76,7 @@ export const Mentors = ({ className }: { className?: string }) => {
                   Joined: {mentor._count.students}
                 </span>
               </TableCell>
-              <TableCell className="flex gap-2">
+              <TableCell className="space-x-2">
                 <AddStudentsDialog mentor={mentor} onSuccessAction={refetch} />
                 {mentor.unmigratedStudents > 0 && (
                   <Button onClick={() => handleMigrate(mentor.id)}>
