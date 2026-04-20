@@ -7,14 +7,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {
-  Box,
-  Settings,
-  ShieldUser,
-  TablePropertiesIcon,
-  Users,
-  UsersRound,
-} from "lucide-react"
+import { Box, TablePropertiesIcon, Users, UsersRound } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -49,29 +42,12 @@ export function NavAdmin() {
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton isActive={pathname === "/admin/mentors"} asChild>
-            <Link href="/admin/mentors">
-              <ShieldUser />
-              Mentors
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
 
         <SidebarMenuItem>
           <SidebarMenuButton isActive={pathname === "/admin/users"} asChild>
             <Link href="/admin/users">
               <Users />
               Users
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-
-        <SidebarMenuItem>
-          <SidebarMenuButton isActive={pathname === "/admin/settings"} asChild>
-            <Link href="/admin/settings">
-              <Settings />
-              Settings
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

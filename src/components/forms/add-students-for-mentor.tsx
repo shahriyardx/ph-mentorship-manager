@@ -9,17 +9,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "../ui/field"
-import {
-  MultiSelect,
-  MultiSelectContent,
-  MultiSelectGroup,
-  MultiSelectItem,
-  MultiSelectTrigger,
-  MultiSelectValue,
-} from "../ui/multi-select"
-
 import { Textarea } from "../ui/textarea"
-import { trpc } from "@/trpc/client"
 import { useMemo } from "react"
 import type z from "zod"
 
@@ -28,7 +18,7 @@ const AddStudentsForMentorForm = ({
   handleSubmit,
 }: {
   form: UseFormReturn<z.infer<typeof AddStudentSchema>>
-  handleSubmit: (values: { batchId: string; emails: string }) => void
+  handleSubmit: (values: { emails: string }) => void
 }) => {
   const emails = useWatch({
     control: form.control,
@@ -41,43 +31,12 @@ const AddStudentsForMentorForm = ({
     )
   }, [emails])
 
-  const { data: batches } = trpc.admin.batches.useQuery()
-
   return (
     <form
       id="add-students-for-mentor"
       onSubmit={form.handleSubmit((values) => handleSubmit(values))}
     >
       <FieldGroup>
-        <Controller
-          name="batchId"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={field.name}>Batch</FieldLabel>
-              <MultiSelect
-                values={field.value ? [field.value] : undefined}
-                onValuesChange={(values) => field.onChange(values[0])}
-                single={true}
-              >
-                <MultiSelectTrigger>
-                  <MultiSelectValue placeholder="Select batch" />
-                </MultiSelectTrigger>
-                <MultiSelectContent>
-                  <MultiSelectGroup>
-                    {batches?.map((batch) => (
-                      <MultiSelectItem key={batch.id} value={batch.id}>
-                        {batch.name}
-                      </MultiSelectItem>
-                    ))}
-                  </MultiSelectGroup>
-                </MultiSelectContent>
-              </MultiSelect>
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
         <Controller
           name="emails"
           control={form.control}

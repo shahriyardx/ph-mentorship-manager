@@ -90,27 +90,39 @@ model Verification {
 }
 
 model Batch {
-  id   String @id @default(cuid())
-  name String
+  id              String  @id @default(cuid())
+  name            String
+  discordServerId String?
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   students      Student[]
   students_data StudentsData[]
+  mentors       Mentor[]
+  isCurrent     Boolean        @default(false)
 
   @@map("batch")
 }
 
 model Mentor {
-  id               String    @id @default(cuid())
+  id String @id @default(cuid())
+
+  batchId               String?
+  categoryId            String?
+  announcementChannelId String?
+  discussionChannelId   String?
+  roleId                String?
+
+  batch  Batch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
   discordChannelId String
   students         Student[]
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId           String    @unique
+  studentsDatas    StudentsData[]
 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  studentsDatas StudentsData[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("mentor")
 }
@@ -119,9 +131,10 @@ model Student {
   id    String @id @default(cuid())
   email String
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mentor Mentor @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  batch  Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mentor         Mentor  @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  batch          Batch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  hasGivenAccess Boolean @default(false)
 
   userId   String @unique
   mentorId String
@@ -150,10 +163,11 @@ model StudentsData {
 }
 
 model Settings {
-  id                    String @id @default(cuid())
-  currentBatchId        String @default("")
-  serverId              String @default("")
-  dashboardLogChannelId String @default("")
+  id                    String  @id @default(cuid())
+  currentBatchId        String  @default("")
+  serverId              String  @default("")
+  dashboardLogChannelId String  @default("")
+  maintenanceMode       Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

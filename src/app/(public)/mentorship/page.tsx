@@ -2,34 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
-import { trpc } from "@/trpc/client"
 import { Shield } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import { toast } from "sonner"
 
 const page = () => {
-  const router = useRouter()
   const { data } = authClient.useSession()
-  const { mutate: applyForMentor } = trpc.mentor.applyForMentor.useMutation({
-    onSuccess: () => {
-      toast.success("Mentorship application submitted successfully")
-    },
-  })
-
-  useEffect(() => {
-    if (!data) return
-
-    if (data.user.role === "mentor") {
-      router.push("/mentor")
-    } else if (data.user.role === "admin") {
-      router.push("/admin")
-    }
-
-    if (data.user.role === "user") {
-      applyForMentor()
-    }
-  }, [data, router, applyForMentor])
 
   return (
     <div>

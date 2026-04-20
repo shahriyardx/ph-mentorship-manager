@@ -12,23 +12,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMemo, useState } from "react"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { AddMentorFormBase } from "@/components/forms/add-mentor-form"
 import { Loader2 } from "lucide-react"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
+import ConditionalRender from "@/components/conditional-render"
 
 const page = () => {
   const [search, setSearch] = useState("")
-  const [isMakingMentor, setIsMakingMentor] = useState(false)
 
   const { data: users, isPending, refetch } = trpc.admin.users.useQuery()
   const { mutate: makeAdmin, isPending: isMakingAdmin } =
@@ -37,8 +26,15 @@ const page = () => {
         refetch()
       },
     })
-  const { mutate: removeAdmin, isPending: isRemovingAdmin } =
-    trpc.admin.removeAdmin.useMutation({
+  const { mutate: makeMentor, isPending: isMakingMentor } =
+    trpc.admin.makeMentor.useMutation({
+      onSuccess: () => {
+        refetch()
+      },
+    })
+
+  const { mutate: makeUser, isPending: isMakingUser } =
+    trpc.admin.makeUser.useMutation({
       onSuccess: () => {
         refetch()
       },
@@ -86,68 +82,50 @@ const page = () => {
                   {user.role === "superadmin" ? "admin" : user.role}
                 </TableCell>
                 <TableCell className="flex items-center gap-2">
-                  {user.role === "superadmin" ? (
+                  <ConditionalRender condition={user.role === "superadmin"}>
                     <span className="text-muted-foreground">Not available</span>
-                  ) : ["mentor", "user"].includes(user.role) ? (
-                    <Button
-                      variant={"outline"}
-                      disabled={isMakingAdmin}
-                      onClick={() => makeAdmin({ userId: user.id })}
+                  </ConditionalRender>
+
+                  <ConditionalRender condition={user.role !== "superadmin"}>
+                    <ConditionalRender condition={user.role !== "admin"}>
+                      <Button
+                        variant={"outline"}
+                        disabled={isMakingAdmin}
+                        onClick={() => makeAdmin({ userId: user.id })}
+                      >
+                        {isMakingAdmin && <Loader2 className="animate-spin" />}
+                        Make Admin
+                      </Button>
+                    </ConditionalRender>
+
+                    <ConditionalRender
+                      condition={
+                        user.role === "admin" || user.role === "mentor"
+                      }
                     >
-                      {isMakingAdmin && <Loader2 className="animate-spin" />}
-                      Make Admin
-                    </Button>
-                  ) : (
-                    <Button
-                      variant={"destructive"}
-                      disabled={isRemovingAdmin}
-                      onClick={() => removeAdmin({ userId: user.id })}
+                      <Button
+                        variant={"outline"}
+                        disabled={isMakingUser}
+                        onClick={() => makeUser({ userId: user.id })}
+                      >
+                        {isMakingUser && <Loader2 className="animate-spin" />}
+                        Make User
+                      </Button>
+                    </ConditionalRender>
+
+                    <ConditionalRender
+                      condition={user.role === "user" || user.role === "admin"}
                     >
-                      {isRemovingAdmin && <Loader2 className="animate-spin" />}
-                      Remove Admin
-                    </Button>
-                  )}
-
-                  {user.role === "user" && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant={"outline"}>Make Mentor</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Make Mentor</DialogTitle>
-                          <DialogDescription>
-                            You are about to make {user.name} a mentor.
-                          </DialogDescription>
-                        </DialogHeader>
-
-                        <AddMentorFormBase
-                          userId={user.id}
-                          onSubmit={() => setIsMakingMentor(true)}
-                          onSuccess={() => {
-                            setIsMakingMentor(false)
-                            refetch()
-                          }}
-                        />
-
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button variant={"outline"}>Cancel</Button>
-                          </DialogClose>
-                          <Button
-                            disabled={isMakingMentor}
-                            type="submit"
-                            form="add-mentor-form"
-                          >
-                            {isMakingMentor && (
-                              <Loader2 className="animate-spin" />
-                            )}
-                            Submit
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                      <Button
+                        variant={"outline"}
+                        disabled={isMakingMentor}
+                        onClick={() => makeMentor({ userId: user.id })}
+                      >
+                        {isMakingMentor && <Loader2 className="animate-spin" />}
+                        Make Mentor
+                      </Button>
+                    </ConditionalRender>
+                  </ConditionalRender>
                 </TableCell>
               </TableRow>
             ))}

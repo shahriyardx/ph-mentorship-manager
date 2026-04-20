@@ -5,11 +5,20 @@ import { authClient } from "@/lib/auth-client"
 import Image from "next/image"
 import { Button } from "./ui/button"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { LogInIcon } from "lucide-react"
 
 const Header = () => {
   const pathname = usePathname()
-  const router = useRouter()
   const { data } = authClient.useSession()
 
   return (
@@ -30,7 +39,7 @@ const Header = () => {
         </Link>
         <div className="ml-auto flex gap-2">
           {data && (
-            <>
+            <div>
               {pathname.startsWith("/admin") ||
               pathname.startsWith("/mentor") ? null : (
                 <>
@@ -47,27 +56,38 @@ const Header = () => {
                   )}
                 </>
               )}
-
-              <Button
-                variant="destructive"
-                size="lg"
-                onClick={async () => {
-                  await authClient.signOut()
-                  router.push("/")
-                }}
-              >
-                Logout
-              </Button>
-            </>
+            </div>
           )}
 
           <ShowIfNotAuthenticated>
             <Button
               onClick={() => authClient.signIn.social({ provider: "discord" })}
             >
+              <LogInIcon />
               Login
             </Button>
           </ShowIfNotAuthenticated>
+          {data && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar>
+                  <AvatarImage
+                    src={data.user.image ?? undefined}
+                    alt={data.user.name ?? undefined}
+                  />
+                  <AvatarFallback>{data.user.name?.[0]}</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Profile</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => authClient.signOut()}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </header>

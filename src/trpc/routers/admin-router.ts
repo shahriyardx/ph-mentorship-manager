@@ -1,21 +1,35 @@
-import {
-  AddStudentSchema,
-  BatchSchema,
-  MentorSchema,
-  SettingsSchema,
-} from "@/schema"
+import { AddMentorSchema, AddStudentSchema, BatchSchema } from "@/schema"
 import {
   adminOrMentorProcedure,
   adminProcedure,
   createTRPCRouter,
+  publicProcedure,
 } from "../init"
 import z from "zod"
-import { env } from "@/lib/env"
 import ExcelJS from "exceljs"
+import { createMentor } from "../utils"
+import { TRPCError } from "@trpc/server"
 
 export const adminRouter = createTRPCRouter({
-  settings: adminProcedure.query(async ({ ctx }) => {
+  settings: publicProcedure.query(async ({ ctx }) => {
     return await ctx.prisma.settings.findFirst()
+  }),
+  toggleMaintenanceMode: adminProcedure.mutation(async ({ ctx }) => {
+    const settings = await ctx.prisma.settings.findFirst()
+    if (settings) {
+      await ctx.prisma.settings.update({
+        where: { id: settings.id },
+        data: {
+          maintenanceMode: !settings.maintenanceMode,
+        },
+      })
+    } else {
+      await ctx.prisma.settings.create({
+        data: {
+          maintenanceMode: true,
+        },
+      })
+    }
   }),
   makeAdmin: adminProcedure
     .input(z.object({ userId: z.string() }))
@@ -30,42 +44,31 @@ export const adminRouter = createTRPCRouter({
         },
       })
     }),
-  removeAdmin: adminProcedure
+  makeMentor: adminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await ctx.prisma.user.update({
         where: {
           id: input.userId,
-          role: { in: ["admin"] },
+          role: { in: ["user"] },
+        },
+        data: {
+          role: "mentor",
+        },
+      })
+    }),
+  makeUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.user.update({
+        where: {
+          id: input.userId,
+          role: { notIn: ["superadmin"] },
         },
         data: {
           role: "user",
         },
       })
-    }),
-  updateSettings: adminProcedure
-    .input(SettingsSchema)
-    .mutation(async ({ input, ctx }) => {
-      const settings = await ctx.prisma.settings.findFirst()
-      if (!settings) {
-        await ctx.prisma.settings.create({
-          data: {
-            serverId: input.serverId,
-            dashboardLogChannelId: input.dashboardLogChannelId,
-            currentBatchId: "",
-          },
-        })
-      } else {
-        await ctx.prisma.settings.update({
-          where: {
-            id: settings.id,
-          },
-          data: {
-            serverId: input.serverId,
-            dashboardLogChannelId: input.dashboardLogChannelId,
-          },
-        })
-      }
     }),
   addBatch: adminProcedure
     .input(BatchSchema)
@@ -73,8 +76,10 @@ export const adminRouter = createTRPCRouter({
       const batch = await ctx.prisma.batch.create({
         data: {
           name: input.name,
+          discordServerId: input.discordServerId,
         },
       })
+
       const settings = await ctx.prisma.settings.findFirst()
       if (!settings) {
         await ctx.prisma.settings.create({
@@ -96,23 +101,23 @@ export const adminRouter = createTRPCRouter({
   setCurrentBatch: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const settings = await ctx.prisma.settings.findFirst()
-      if (!settings) {
-        await ctx.prisma.settings.create({
-          data: {
-            currentBatchId: input.id,
-          },
-        })
-      } else {
-        await ctx.prisma.settings.update({
-          where: {
-            id: settings.id,
-          },
-          data: {
-            currentBatchId: input.id,
-          },
-        })
-      }
+      await ctx.prisma.batch.updateMany({
+        where: {
+          isCurrent: true,
+        },
+        data: {
+          isCurrent: false,
+        },
+      })
+
+      await ctx.prisma.batch.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          isCurrent: true,
+        },
+      })
     }),
   deleteBatch: adminProcedure
     .input(z.object({ id: z.string() }))
@@ -124,9 +129,6 @@ export const adminRouter = createTRPCRouter({
       })
     }),
   batches: adminOrMentorProcedure.query(async ({ ctx }) => {
-    const settings = await ctx.prisma.settings.findFirst()
-    const currentBatchId = settings?.currentBatchId
-
     const batches = await ctx.prisma.batch.findMany({
       include: {
         _count: {
@@ -136,12 +138,12 @@ export const adminRouter = createTRPCRouter({
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     })
 
-    return batches.map((batch) => ({
-      ...batch,
-      isCurrent: batch.id === currentBatchId,
-    }))
+    return batches
   }),
   users: adminProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany()
@@ -154,60 +156,40 @@ export const adminRouter = createTRPCRouter({
     })
   }),
   addMentor: adminProcedure
-    .input(MentorSchema)
+    .input(AddMentorSchema)
     .mutation(async ({ input, ctx }) => {
-      const user = await ctx.prisma.user.findUnique({
-        where: {
-          id: input.mentorId,
-        },
-      })
-      if (!user) {
-        throw new Error("User not found")
-      }
+      input.mentors.forEach(async (mentorUserId) => {
+        const user = await ctx.prisma.user.findUnique({
+          where: {
+            id: mentorUserId,
+          },
+        })
 
-      const mentor = await ctx.prisma.mentor.findUnique({
-        where: {
-          userId: input.mentorId,
-        },
-      })
+        const batch = await ctx.prisma.batch.findFirst({
+          where: {
+            id: input.batchId,
+          },
+        })
 
-      if (mentor) {
-        throw new Error("Mentor already exists")
-      }
-
-      await ctx.prisma.mentor.create({
-        data: {
-          discordChannelId: input.discordChannelId,
-          userId: input.mentorId,
-        },
-      })
-
-      await ctx.prisma.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          appliedForMentor: false,
-          role: user.role === "user" ? "mentor" : user.role,
-        },
-      })
-
-      const account = await ctx.prisma.account.findFirst({
-        where: {
-          userId: input.mentorId,
-        },
-      })
-
-      if (account) {
-        try {
-          await sendDiscordDM(
-            account.accountId,
-            `Your mentorship application has been approved. Go to ${env.BETTER_AUTH_URL}/mentor to access your dashboard`,
-          )
-        } catch {
-          console.error("Failed to send Discord DM")
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          })
         }
-      }
+
+        if (!batch) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Batch not found",
+          })
+        }
+
+        await createMentor({
+          userId: mentorUserId,
+          batchId: batch.id,
+        })
+      })
     }),
   deleteMentor: adminProcedure
     .input(z.object({ id: z.string() }))
@@ -245,35 +227,15 @@ export const adminRouter = createTRPCRouter({
     }),
 
   mentors: adminProcedure.query(async ({ ctx }) => {
-    const settings = await ctx.prisma.settings.findFirst()
-    const batchId = settings ? settings.currentBatchId : ""
-
-    const mentors = await ctx.prisma.mentor.findMany({
-      include: {
-        user: true,
-        _count: {
-          select: {
-            studentsDatas: {
-              where: {
-                batchId: batchId,
-              },
-            },
-            students: {
-              where: {
-                batchId: batchId,
-              },
-            },
-          },
+    const mentors = await ctx.prisma.user.findMany({
+      where: {
+        role: {
+          in: ["mentor", "admin", "superadmin"],
         },
       },
     })
 
-    const mentorWithUser = mentors.map((mentor) => ({
-      ...mentor,
-      name: mentor.user.name,
-      email: mentor.user.email,
-    }))
-    return mentorWithUser
+    return mentors
   }),
   deleteStudent: adminProcedure
     .input(z.object({ id: z.string() }))
@@ -294,7 +256,9 @@ export const adminRouter = createTRPCRouter({
       })
     }),
   addStudents: adminProcedure
-    .input(AddStudentSchema.extend({ mentorId: z.string() }))
+    .input(
+      AddStudentSchema.extend({ mentorId: z.string(), batchId: z.string() }),
+    )
     .mutation(async ({ input, ctx }) => {
       const studentEmails =
         input.emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) ??
@@ -414,49 +378,3 @@ export const adminRouter = createTRPCRouter({
       }
     }),
 })
-
-async function sendDiscordDM(userId: string, message: string) {
-  const headers = {
-    Authorization: `Bot ${env.DISCORD_TOKEN}`,
-    "Content-Type": "application/json",
-    "User-Agent": "ProgrammingHero (https://programming-hero.com, 1.0)",
-  }
-
-  // Step 1: Create a DM channel with the user
-  const dmChannelResponse = await fetch(
-    "https://discord.com/api/v10/users/@me/channels",
-    {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ recipient_id: userId }),
-    },
-  )
-
-  if (!dmChannelResponse.ok) {
-    const error = await dmChannelResponse.json()
-    throw new Error(
-      `Failed to create DM channel: ${error.message || dmChannelResponse.statusText}`,
-    )
-  }
-
-  const dmChannel = await dmChannelResponse.json()
-
-  // Step 2: Send the message to the newly created DM channel
-  const messageResponse = await fetch(
-    `https://discord.com/api/v10/channels/${dmChannel.id}/messages`,
-    {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ content: message }),
-    },
-  )
-
-  if (!messageResponse.ok) {
-    const error = await messageResponse.json()
-    throw new Error(
-      `Failed to send message: ${error.message || messageResponse.statusText}`,
-    )
-  }
-
-  return await messageResponse.json()
-}
