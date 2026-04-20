@@ -9,14 +9,46 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useParams } from "@/hooks/use-params"
-import { trpc } from "@/trpc/client"
+import { trpc, trpcVanilla } from "@/trpc/client"
 import { AddMentor } from "../add-mentor"
 import { AddStudentsDialog } from "./add-students-dialog"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { Loader2 } from "lucide-react"
+
+type MigrationProgress = {
+  migrated: number
+  total: number
+}
 
 export const Mentors = ({ className }: { className?: string }) => {
   const { batchId } = useParams()
   const { data: mentors, refetch } = trpc.batch.mentors.useQuery({ batchId })
 
+  const [isMigrating, setIsMigrating] = useState(false)
+  const [progress, setProgress] = useState<MigrationProgress>({
+    migrated: 0,
+    total: 0,
+  })
+
+  const handleMigrate = async (mentorId: string) => {
+    setIsMigrating(true)
+
+    try {
+      const stream = await trpcVanilla.batch.migrateStudents.mutate({
+        batchId: batchId as string,
+        mentorId: mentorId,
+      })
+      for await (const update of stream) {
+        setProgress(update)
+        if (update.migrated === update.total) {
+          refetch()
+        }
+      }
+    } finally {
+      setIsMigrating(false)
+    }
+  }
   return (
     <div className={className}>
       <div className="flex justify-between items-center mb-2">
@@ -44,8 +76,16 @@ export const Mentors = ({ className }: { className?: string }) => {
                   Joined: {mentor._count.students}
                 </span>
               </TableCell>
-              <TableCell>
+              <TableCell className="flex gap-2">
                 <AddStudentsDialog mentor={mentor} onSuccessAction={refetch} />
+                {mentor.unmigratedStudents > 0 && (
+                  <Button onClick={() => handleMigrate(mentor.id)}>
+                    {isMigrating && <Loader2 className="animate-spin" />}
+                    {isMigrating
+                      ? `Migrated ${progress?.migrated}/${progress?.total}`
+                      : `Migrate ${mentor.unmigratedStudents} Students`}
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -80,7 +80,24 @@ export const batchRouter = createTRPCRouter({
         },
       })
 
-      return mentors
+      const mentorsStudent = await Promise.all(
+        mentors.map(async (mentor) => {
+          const unmigratedStudents = await ctx.prisma.student.count({
+            where: {
+              hasGivenAccess: false,
+              mentorId: mentor.id,
+              batchId: input.batchId,
+            },
+          })
+
+          return {
+            ...mentor,
+            unmigratedStudents,
+          }
+        }),
+      )
+
+      return mentorsStudent
     }),
   setDiscord: adminProcedure
     .input(BatchSetDiscordSchema)
@@ -97,6 +114,7 @@ export const batchRouter = createTRPCRouter({
     .input(
       z.object({
         batchId: z.string(),
+        mentorId: z.string().optional(),
       }),
     )
     .mutation(async function* ({ input, ctx }) {
@@ -107,13 +125,23 @@ export const batchRouter = createTRPCRouter({
       if (!batch) {
         return
       }
-
-      const students = await ctx.prisma.student.findMany({
-        where: {
-          batchId: input.batchId,
-          hasGivenAccess: false,
-        },
-      })
+      let students = []
+      if (!input.mentorId) {
+        students = await ctx.prisma.student.findMany({
+          where: {
+            batchId: input.batchId,
+            hasGivenAccess: false,
+          },
+        })
+      } else {
+        students = await ctx.prisma.student.findMany({
+          where: {
+            batchId: input.batchId,
+            hasGivenAccess: false,
+            mentorId: input.mentorId,
+          },
+        })
+      }
 
       let migrated = 0
       const total = students.length
