@@ -99,6 +99,7 @@ model Batch {
   students      Student[]
   students_data StudentsData[]
   mentors       Mentor[]
+  isCurrent     Boolean        @default(false)
 
   @@map("batch")
 }
@@ -110,6 +111,7 @@ model Mentor {
   categoryId            String?
   announcementChannelId String?
   discussionChannelId   String?
+  roleId                String?
 
   batch  Batch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -129,9 +131,10 @@ model Student {
   id    String @id @default(cuid())
   email String
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mentor Mentor @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  batch  Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mentor         Mentor  @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  batch          Batch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  hasGivenAccess Boolean @default(false)
 
   userId   String @unique
   mentorId String

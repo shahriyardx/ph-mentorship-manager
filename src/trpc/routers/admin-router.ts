@@ -1,9 +1,4 @@
-import {
-  AddMentorSchema,
-  AddStudentSchema,
-  BatchSchema,
-  SettingsSchema,
-} from "@/schema"
+import { AddMentorSchema, AddStudentSchema, BatchSchema } from "@/schema"
 import {
   adminOrMentorProcedure,
   adminProcedure,
@@ -57,30 +52,6 @@ export const adminRouter = createTRPCRouter({
         },
       })
     }),
-  updateSettings: adminProcedure
-    .input(SettingsSchema)
-    .mutation(async ({ input, ctx }) => {
-      const settings = await ctx.prisma.settings.findFirst()
-      if (!settings) {
-        await ctx.prisma.settings.create({
-          data: {
-            serverId: input.serverId,
-            dashboardLogChannelId: input.dashboardLogChannelId,
-            currentBatchId: "",
-          },
-        })
-      } else {
-        await ctx.prisma.settings.update({
-          where: {
-            id: settings.id,
-          },
-          data: {
-            serverId: input.serverId,
-            dashboardLogChannelId: input.dashboardLogChannelId,
-          },
-        })
-      }
-    }),
   addBatch: adminProcedure
     .input(BatchSchema)
     .mutation(async ({ input, ctx }) => {
@@ -112,23 +83,23 @@ export const adminRouter = createTRPCRouter({
   setCurrentBatch: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const settings = await ctx.prisma.settings.findFirst()
-      if (!settings) {
-        await ctx.prisma.settings.create({
-          data: {
-            currentBatchId: input.id,
-          },
-        })
-      } else {
-        await ctx.prisma.settings.update({
-          where: {
-            id: settings.id,
-          },
-          data: {
-            currentBatchId: input.id,
-          },
-        })
-      }
+      await ctx.prisma.batch.updateMany({
+        where: {
+          isCurrent: true,
+        },
+        data: {
+          isCurrent: false,
+        },
+      })
+
+      await ctx.prisma.batch.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          isCurrent: true,
+        },
+      })
     }),
   deleteBatch: adminProcedure
     .input(z.object({ id: z.string() }))
@@ -140,9 +111,6 @@ export const adminRouter = createTRPCRouter({
       })
     }),
   batches: adminOrMentorProcedure.query(async ({ ctx }) => {
-    const settings = await ctx.prisma.settings.findFirst()
-    const currentBatchId = settings?.currentBatchId
-
     const batches = await ctx.prisma.batch.findMany({
       include: {
         _count: {
@@ -152,12 +120,12 @@ export const adminRouter = createTRPCRouter({
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     })
 
-    return batches.map((batch) => ({
-      ...batch,
-      isCurrent: batch.id === currentBatchId,
-    }))
+    return batches
   }),
   users: adminProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany()
@@ -202,7 +170,6 @@ export const adminRouter = createTRPCRouter({
         await createMentor({
           userId: mentorUserId,
           batchId: batch.id,
-          categoryName: `${user.name.trim().replaceAll(" ", "-")}-squad`,
         })
       })
     }),

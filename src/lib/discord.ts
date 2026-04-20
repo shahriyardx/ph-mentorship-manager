@@ -9,6 +9,7 @@ import {
   type RESTPostAPIGuildChannelResult,
   type APIPartialGuild,
   type RESTPostAPIGuildRoleJSONBody,
+  type APIRole,
 } from "discord-api-types/v10"
 
 export const rest = new REST({ version: "10" }).setToken(env.DISCORD_TOKEN)
@@ -22,8 +23,12 @@ export const getTextChannels = async (guild_id: string) => {
 }
 
 export const getChannel = async (channel_id: string) => {
-  const channel = await rest.get(Routes.channel(channel_id))
-  return channel
+  try {
+    const channel = await rest.get(Routes.channel(channel_id))
+    return channel as APIChannel
+  } catch {
+    return null
+  }
 }
 
 export const createRole = async (
@@ -33,7 +38,7 @@ export const createRole = async (
   const role = await rest.post(Routes.guildRoles(guild_id), {
     body,
   })
-  return role
+  return role as APIRole
 }
 
 export const getServers = async () => {
@@ -80,4 +85,12 @@ export const addUserToGuild = async (
       access_token,
     },
   })
+}
+
+export const addRoleToUser = async (
+  guild_id: string,
+  user_id: string,
+  role_id: string,
+) => {
+  return await rest.put(Routes.guildMemberRole(guild_id, user_id, role_id))
 }

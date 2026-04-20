@@ -1,14 +1,18 @@
-import { createChannel } from "@/lib/discord"
+import {
+  createChannel,
+  createRole,
+  getChannel,
+  updateChannel,
+} from "@/lib/discord"
 import { prisma } from "@/lib/prisma"
 import {
   ChannelType,
   PermissionFlagsBits,
   OverwriteType,
-  type APIOverwrite,
+  type APIChannel,
 } from "discord-api-types/v10"
 
 type CreateMentorChannelsInput = {
-  categoryName: string
   userId: string
   batchId: string
 }
@@ -28,12 +32,16 @@ export const getUserDiscordId = async (userId: string) => {
 export const createMentor = async ({
   userId,
   batchId,
-  categoryName,
 }: CreateMentorChannelsInput) => {
   const mentor = await prisma.mentor.findFirst({
     where: {
       userId: userId,
       batchId: batchId,
+    },
+  })
+  const user = await prisma.user.findFirst({
+    where: {
+      id: userId,
     },
   })
 
@@ -55,6 +63,11 @@ export const createMentor = async ({
   if (!batch) return
 
   const guildId = batch.discordServerId as string
+  const categoryName = slugify(`${user?.name}-squad`)
+
+  const role = await createRole(guildId, {
+    name: categoryName,
+  })
 
   const everyonePermission = {
     id: guildId,
@@ -63,7 +76,7 @@ export const createMentor = async ({
       PermissionFlagsBits.ViewChannel | PermissionFlagsBits.SendMessages,
     ),
     allow: "0",
-  } as APIOverwrite
+  }
 
   const mentorPermission = {
     id: userDiscordId,
@@ -77,42 +90,92 @@ export const createMentor = async ({
         PermissionFlagsBits.AddReactions |
         PermissionFlagsBits.EmbedLinks,
     ),
-  } as APIOverwrite
+  }
+
+  const rolePermissionViewOnly = {
+    id: role.id,
+    type: OverwriteType.Role,
+    allow: String(PermissionFlagsBits.ViewChannel),
+  }
+
+  const rolePermissionViewAndSend = {
+    id: role.id,
+    type: OverwriteType.Role,
+    allow: String(
+      PermissionFlagsBits.ViewChannel | PermissionFlagsBits.SendMessages,
+    ),
+  }
 
   const category = await createChannel(guildId, {
     name: categoryName,
     type: ChannelType.GuildCategory,
-    permission_overwrites: [everyonePermission],
+    permission_overwrites: [everyonePermission, mentorPermission],
   })
 
   const announcements = await createChannel(guildId, {
     name: "announcements",
     type: ChannelType.GuildText,
     parent_id: category.id,
-    permission_overwrites: [everyonePermission, mentorPermission],
+    permission_overwrites: [
+      everyonePermission,
+      mentorPermission,
+      rolePermissionViewOnly,
+    ],
   })
 
-  const discussions = await createChannel(guildId, {
-    name: "discussions",
-    type: ChannelType.GuildText,
-    parent_id: category.id,
-    permission_overwrites: [everyonePermission, mentorPermission],
-  })
+  let discussions: APIChannel | null
 
   if (mentorWithoutBatch) {
+    discussions = await getChannel(mentorWithoutBatch.discordChannelId)
+
+    if (discussions) {
+      await updateChannel(discussions.id, {
+        name: "discussion",
+        parent_id: category.id,
+        permission_overwrites: [
+          everyonePermission,
+          mentorPermission,
+          rolePermissionViewAndSend,
+        ],
+      })
+    } else {
+      discussions = await createChannel(guildId, {
+        name: "discussion",
+        type: ChannelType.GuildText,
+        parent_id: category.id,
+        permission_overwrites: [
+          everyonePermission,
+          mentorPermission,
+          rolePermissionViewAndSend,
+        ],
+      })
+    }
+
     await prisma.mentor.update({
       where: {
-        userId: userId,
+        id: mentorWithoutBatch.id,
       },
       data: {
         batchId,
         categoryId: category.id,
         announcementChannelId: announcements.id,
         discussionChannelId: discussions.id,
+        roleId: role.id,
         discordChannelId: "",
       },
     })
   } else {
+    discussions = await createChannel(guildId, {
+      name: "discussion",
+      type: ChannelType.GuildText,
+      parent_id: category.id,
+      permission_overwrites: [
+        everyonePermission,
+        mentorPermission,
+        rolePermissionViewAndSend,
+      ],
+    })
+
     await prisma.mentor.create({
       data: {
         userId: userId,
@@ -120,18 +183,16 @@ export const createMentor = async ({
         categoryId: category.id,
         announcementChannelId: announcements.id,
         discussionChannelId: discussions.id,
+        roleId: role.id,
         discordChannelId: "",
       },
     })
   }
-  await prisma.mentor.create({
-    data: {
-      userId: userId,
-      batchId,
-      categoryId: category.id,
-      announcementChannelId: announcements.id,
-      discussionChannelId: discussions.id,
-      discordChannelId: "",
-    },
-  })
+}
+
+const slugify = (str: string) => {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
 }

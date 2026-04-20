@@ -1,6 +1,6 @@
 import z from "zod"
 import { adminProcedure, createTRPCRouter } from "../init"
-import { getServer } from "@/lib/discord"
+import { addRoleToUser, getServer } from "@/lib/discord"
 import { BatchSetDiscordSchema } from "@/schema"
 
 export const batchRouter = createTRPCRouter({
@@ -30,6 +30,12 @@ export const batchRouter = createTRPCRouter({
         },
       })
 
+      const unmigratedStudents = await ctx.prisma.student.count({
+        where: {
+          hasGivenAccess: false,
+        },
+      })
+
       const discord = batch?.discordServerId
         ? await getServer(batch?.discordServerId)
         : null
@@ -43,6 +49,7 @@ export const batchRouter = createTRPCRouter({
         assignedStudents: assignedStudents.length,
         joinedStudents: joinedStudents.length,
         mentors: mentors.length,
+        unmigratedStudents,
       }
     }),
   mentors: adminProcedure
@@ -84,5 +91,79 @@ export const batchRouter = createTRPCRouter({
           discordServerId: input.discordServerId,
         },
       })
+    }),
+
+  migrateStudents: adminProcedure
+    .input(
+      z.object({
+        batchId: z.string(),
+      }),
+    )
+    .mutation(async function* ({ input, ctx }) {
+      const batch = await ctx.prisma.batch.findFirst({
+        where: { id: input.batchId },
+      })
+
+      if (!batch) {
+        return
+      }
+
+      const students = await ctx.prisma.student.findMany({
+        where: {
+          batchId: input.batchId,
+          hasGivenAccess: false,
+        },
+      })
+
+      let migrated = 0
+      const total = students.length
+
+      yield { migrated, total }
+
+      for (const student of students) {
+        const mentor = await ctx.prisma.mentor.findFirst({
+          where: {
+            batchId: input.batchId,
+            id: student.mentorId,
+          },
+        })
+
+        if (!mentor) {
+          migrated++
+          yield { migrated, total }
+          continue
+        }
+
+        const account = await ctx.prisma.account.findFirst({
+          where: {
+            userId: student.userId,
+          },
+        })
+
+        if (!account) {
+          migrated++
+          yield { migrated, total }
+          continue
+        }
+
+        try {
+          await addRoleToUser(
+            batch.discordServerId as string,
+            account.accountId,
+            mentor.roleId as string,
+          )
+
+          await ctx.prisma.student.update({
+            where: { id: student.id },
+            data: {
+              hasGivenAccess: true,
+            },
+          })
+        } catch (err) {
+          console.error(err)
+        }
+        migrated++
+        yield { migrated, total }
+      }
     }),
 })
