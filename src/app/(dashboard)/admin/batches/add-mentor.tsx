@@ -44,7 +44,9 @@ export const AddMentor = ({ batchId }: { batchId: string }) => {
       toast.error(error.message)
     },
   })
-  const { data: mentors } = trpc.admin.mentors.useQuery()
+  const { data: mentors } = trpc.admin.mentorsNotAddedToBatch.useQuery({
+    batchId,
+  })
 
   return (
     <Dialog>

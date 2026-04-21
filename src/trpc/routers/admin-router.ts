@@ -237,6 +237,31 @@ export const adminRouter = createTRPCRouter({
 
     return mentors
   }),
+  mentorsNotAddedToBatch: adminProcedure
+    .input(z.object({ batchId: z.string() }))
+    .query(async ({ ctx }) => {
+      const mentors = await ctx.prisma.user.findMany({
+        where: {
+          role: {
+            in: ["mentor", "admin", "superadmin"],
+          },
+        },
+      })
+
+      const addedMentor = await ctx.prisma.mentor.findMany({
+        where: {
+          batchId: {
+            not: null,
+          },
+        },
+      })
+
+      const unassignedMentors = mentors.filter(
+        (mentor) => !addedMentor.find((m) => m.userId === mentor.id),
+      )
+
+      return unassignedMentors
+    }),
   deleteStudent: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
