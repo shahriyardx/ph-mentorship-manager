@@ -28,7 +28,13 @@ import { AddMentorSchema } from "@/schema"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
-export const AddMentor = ({ batchId }: { batchId: string }) => {
+export const AddMentor = ({
+  batchId,
+  refetch,
+}: {
+  batchId: string
+  refetch: () => Promise<void>
+}) => {
   const form = useForm({
     resolver: zodResolver(AddMentorSchema),
   })
@@ -39,6 +45,7 @@ export const AddMentor = ({ batchId }: { batchId: string }) => {
         mentors: [],
       })
       toast.success("Mentor added successfully")
+      refetch()
     },
     onError: (error) => {
       toast.error(error.message)
