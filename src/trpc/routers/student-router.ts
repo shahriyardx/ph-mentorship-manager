@@ -65,6 +65,7 @@ export const studentRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           mentorId: assignedStudent.mentorId,
           batchId: assignedStudent.batchId,
+          hasGivenAccess: true,
         },
       })
 
