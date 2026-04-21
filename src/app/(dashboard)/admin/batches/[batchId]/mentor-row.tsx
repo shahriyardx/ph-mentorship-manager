@@ -1,7 +1,7 @@
 "use client"
 
 import { useParams } from "@/hooks/use-params"
-import { trpcVanilla } from "@/trpc/client"
+import { trpc, trpcVanilla } from "@/trpc/client"
 import { useState } from "react"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { AddStudentsDialog } from "./add-students-dialog"
@@ -25,6 +25,16 @@ const MentorRow = ({
   refetch: () => void
 }) => {
   const { batchId } = useParams()
+
+  const { mutate: exportStudents } = trpc.mentor.exportStudents.useMutation({
+    onSuccess: (data) => {
+      const link = document.createElement("a")
+      link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.base64}`
+      link.download = data.filename
+      link.click()
+      link.remove()
+    },
+  })
 
   const [isMigrating, setIsMigrating] = useState(false)
   const [progress, setProgress] = useState<MigrationProgress>({
@@ -61,8 +71,33 @@ const MentorRow = ({
       </TableCell>
       <TableCell className="space-x-2">
         <AddStudentsDialog mentor={mentor} onSuccessAction={refetch} />
+
+        <Button
+          variant={"outline"}
+          onClick={() =>
+            exportStudents({
+              type: "joined",
+              batchId: batchId,
+            })
+          }
+        >
+          Export Joined
+        </Button>
+
+        <Button
+          variant={"outline"}
+          onClick={() =>
+            exportStudents({
+              type: "notJoined",
+              batchId: batchId,
+            })
+          }
+        >
+          Export Not Joined
+        </Button>
+
         {mentor.unmigratedStudents > 0 && (
-          <Button onClick={() => handleMigrate(mentor.id)}>
+          <Button variant={"outline"} onClick={() => handleMigrate(mentor.id)}>
             {isMigrating && <Loader2 className="animate-spin" />}
             {isMigrating
               ? `Migrated ${progress?.migrated}/${progress?.total}`
