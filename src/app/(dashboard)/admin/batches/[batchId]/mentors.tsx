@@ -21,7 +21,7 @@ export const Mentors = ({ className }: { className?: string }) => {
     <div className={className}>
       <div className="flex justify-between items-center mb-2">
         <h1 className="text-2xl font-bold">Mentors</h1>
-        <AddMentor batchId={batchId} />
+        <AddMentor batchId={batchId} refetch={refetch} />
       </div>
 
       <Table className="border-2">

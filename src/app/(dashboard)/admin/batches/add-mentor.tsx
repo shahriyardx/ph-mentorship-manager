@@ -33,7 +33,7 @@ export const AddMentor = ({
   refetch,
 }: {
   batchId: string
-  refetch: () => Promise<void>
+  refetch: () => void
 }) => {
   const form = useForm({
     resolver: zodResolver(AddMentorSchema),
