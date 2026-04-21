@@ -59,6 +59,19 @@ export const studentRouter = createTRPCRouter({
         })
       }
 
+      try {
+        await addRoleToUser(
+          batch.discordServerId as string,
+          account.accountId,
+          mentor.roleId as string,
+        )
+      } catch {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to join please try again.",
+        })
+      }
+
       await ctx.prisma.student.create({
         data: {
           email: assignedStudent.email,
@@ -68,12 +81,6 @@ export const studentRouter = createTRPCRouter({
           hasGivenAccess: true,
         },
       })
-
-      await addRoleToUser(
-        batch.discordServerId as string,
-        account.accountId,
-        mentor.roleId as string,
-      )
     }),
 })
 
