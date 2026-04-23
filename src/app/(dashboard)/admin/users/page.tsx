@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner"
 
 const page = () => {
+  const [role, setRole] = useState<string | null>(null)
   const [search, setSearch] = useState("")
 
   const { data: users, isPending, refetch } = trpc.admin.users.useQuery()
@@ -40,13 +41,19 @@ const page = () => {
 
   const filteredUsers = useMemo(() => {
     if (!users) return []
-    if (!search) return users
-    return users.filter(
-      (user) =>
-        user.name.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase()),
-    )
-  }, [search, users])
+
+    const searched = search
+      ? users.filter(
+          (user) =>
+            user.name.toLowerCase().includes(search.toLowerCase()) ||
+            user.email.toLowerCase().includes(search.toLowerCase()),
+        )
+      : users
+
+    if (!role) return searched
+
+    return searched.filter((user) => user.role === role)
+  }, [search, users, role])
 
   return (
     <DashboardPageWrapper pageTitle="Users">
@@ -54,13 +61,28 @@ const page = () => {
         {isPending && <p className="mb-2">Loading...</p>}
 
         <div className="flex items-center justify-between">
-          {users && <p>Total: {users.length}</p>}
-          <Input
-            placeholder="Name or Email"
-            className="w-full max-w-80"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          {filteredUsers && <p>Total: {filteredUsers.length}</p>}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Name or Email"
+              className="w-full max-w-80"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Select onValueChange={(value) => setRole(value)}>
+              <SelectTrigger className="">
+                <SelectValue placeholder="Select Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="mentor">Mentor</SelectItem>
+                  <SelectItem value="superadmin">Superadmin</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <Table className="mt-2 border-2">
           <TableHeader>

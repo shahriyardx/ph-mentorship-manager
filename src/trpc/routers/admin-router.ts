@@ -68,45 +68,6 @@ export const adminRouter = createTRPCRouter({
         })
       }
     }),
-  makeAdmin: superadminProcedure
-    .input(z.object({ userId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      await ctx.prisma.user.update({
-        where: {
-          id: input.userId,
-          role: { in: ["user", "mentor"] },
-        },
-        data: {
-          role: "admin",
-        },
-      })
-    }),
-  makeMentor: adminProcedure
-    .input(z.object({ userId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      await ctx.prisma.user.update({
-        where: {
-          id: input.userId,
-          role: { in: ["user"] },
-        },
-        data: {
-          role: "mentor",
-        },
-      })
-    }),
-  makeUser: adminProcedure
-    .input(z.object({ userId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      await ctx.prisma.user.update({
-        where: {
-          id: input.userId,
-          role: { notIn: ["superadmin"] },
-        },
-        data: {
-          role: "user",
-        },
-      })
-    }),
   addBatch: superadminProcedure
     .input(BatchSchema)
     .mutation(async ({ input, ctx }) => {
