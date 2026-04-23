@@ -10,6 +10,7 @@ import z from "zod"
 import ExcelJS from "exceljs"
 import { createMentor } from "../utils"
 import { TRPCError } from "@trpc/server"
+import type { UserRole } from "@/generated/prisma/enums"
 
 export const adminRouter = createTRPCRouter({
   settings: publicProcedure.query(async ({ ctx }) => {
@@ -67,6 +68,11 @@ export const adminRouter = createTRPCRouter({
           message: "Unable to update role of superadmins",
         })
       }
+
+      await ctx.prisma.user.update({
+        where: { id: input.userId },
+        data: { role: input.role as UserRole },
+      })
     }),
   addBatch: superadminProcedure
     .input(BatchSchema)
@@ -144,7 +150,11 @@ export const adminRouter = createTRPCRouter({
     return batches
   }),
   users: adminProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.user.findMany()
+    return ctx.prisma.user.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    })
   }),
   appliedForMentor: adminProcedure.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany({

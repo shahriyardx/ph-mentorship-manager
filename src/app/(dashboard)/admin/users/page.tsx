@@ -9,12 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useMemo, useState } from "react"
-import { Loader2 } from "lucide-react"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
-import ConditionalRender from "@/components/conditional-render"
 import {
   Select,
   SelectContent,
@@ -103,7 +100,7 @@ const page = () => {
                 </TableCell>
                 <TableCell className="flex items-center gap-2">
                   <Select
-                    value={user.role}
+                    defaultValue={user.role}
                     onValueChange={(value) =>
                       updateRole({ userId: user.id, role: value })
                     }
