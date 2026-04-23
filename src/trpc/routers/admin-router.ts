@@ -32,6 +32,42 @@ export const adminRouter = createTRPCRouter({
       })
     }
   }),
+  updateRole: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        role: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (
+        (input.role === "admin" || input.role === "superadmin") &&
+        ctx.session.user.role !== "superadmin"
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only superadmins can make users admin or superadmin",
+        })
+      }
+
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: input.userId },
+      })
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        })
+      }
+
+      if (user.role === "superadmin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Unable to update role of superadmins",
+        })
+      }
+    }),
   makeAdmin: superadminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {

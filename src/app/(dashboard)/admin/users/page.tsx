@@ -15,30 +15,28 @@ import { useMemo, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
 import ConditionalRender from "@/components/conditional-render"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { toast } from "sonner"
 
 const page = () => {
   const [search, setSearch] = useState("")
 
   const { data: users, isPending, refetch } = trpc.admin.users.useQuery()
-  const { mutate: makeAdmin, isPending: isMakingAdmin } =
-    trpc.admin.makeAdmin.useMutation({
-      onSuccess: () => {
-        refetch()
-      },
-    })
-  const { mutate: makeMentor, isPending: isMakingMentor } =
-    trpc.admin.makeMentor.useMutation({
-      onSuccess: () => {
-        refetch()
-      },
-    })
-
-  const { mutate: makeUser, isPending: isMakingUser } =
-    trpc.admin.makeUser.useMutation({
-      onSuccess: () => {
-        refetch()
-      },
-    })
+  const { mutate: updateRole } = trpc.admin.updateRole.useMutation({
+    onSuccess: () => {
+      refetch()
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
 
   const filteredUsers = useMemo(() => {
     if (!users) return []
@@ -82,50 +80,24 @@ const page = () => {
                   {user.role === "superadmin" ? "admin" : user.role}
                 </TableCell>
                 <TableCell className="flex items-center gap-2">
-                  <ConditionalRender condition={user.role === "superadmin"}>
-                    <span className="text-muted-foreground">Not available</span>
-                  </ConditionalRender>
-
-                  <ConditionalRender condition={user.role !== "superadmin"}>
-                    <ConditionalRender condition={user.role !== "admin"}>
-                      <Button
-                        variant={"outline"}
-                        disabled={isMakingAdmin}
-                        onClick={() => makeAdmin({ userId: user.id })}
-                      >
-                        {isMakingAdmin && <Loader2 className="animate-spin" />}
-                        Make Admin
-                      </Button>
-                    </ConditionalRender>
-
-                    <ConditionalRender
-                      condition={
-                        user.role === "admin" || user.role === "mentor"
-                      }
-                    >
-                      <Button
-                        variant={"outline"}
-                        disabled={isMakingUser}
-                        onClick={() => makeUser({ userId: user.id })}
-                      >
-                        {isMakingUser && <Loader2 className="animate-spin" />}
-                        Make User
-                      </Button>
-                    </ConditionalRender>
-
-                    <ConditionalRender
-                      condition={user.role === "user" || user.role === "admin"}
-                    >
-                      <Button
-                        variant={"outline"}
-                        disabled={isMakingMentor}
-                        onClick={() => makeMentor({ userId: user.id })}
-                      >
-                        {isMakingMentor && <Loader2 className="animate-spin" />}
-                        Make Mentor
-                      </Button>
-                    </ConditionalRender>
-                  </ConditionalRender>
+                  <Select
+                    value={user.role}
+                    onValueChange={(value) =>
+                      updateRole({ userId: user.id, role: value })
+                    }
+                  >
+                    <SelectTrigger className="">
+                      <SelectValue placeholder="Theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="user">User</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="mentor">Mentor</SelectItem>
+                        <SelectItem value="superadmin">Superadmin</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </TableCell>
               </TableRow>
             ))}

@@ -1,7 +1,6 @@
 "use client"
 
 import { DashboardPageWrapper } from "@/components/dashboard-page-wrapper"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -19,6 +18,7 @@ const page = () => {
         toast.error(error.message)
       },
     })
+
   return (
     <DashboardPageWrapper pageTitle="Settings">
       <div>
