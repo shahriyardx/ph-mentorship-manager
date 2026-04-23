@@ -4,6 +4,7 @@ import {
   adminProcedure,
   createTRPCRouter,
   publicProcedure,
+  superadminProcedure,
 } from "../init"
 import z from "zod"
 import ExcelJS from "exceljs"
@@ -14,7 +15,7 @@ export const adminRouter = createTRPCRouter({
   settings: publicProcedure.query(async ({ ctx }) => {
     return await ctx.prisma.settings.findFirst()
   }),
-  toggleMaintenanceMode: adminProcedure.mutation(async ({ ctx }) => {
+  toggleMaintenanceMode: superadminProcedure.mutation(async ({ ctx }) => {
     const settings = await ctx.prisma.settings.findFirst()
     if (settings) {
       await ctx.prisma.settings.update({
@@ -31,7 +32,7 @@ export const adminRouter = createTRPCRouter({
       })
     }
   }),
-  makeAdmin: adminProcedure
+  makeAdmin: superadminProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await ctx.prisma.user.update({
@@ -70,7 +71,7 @@ export const adminRouter = createTRPCRouter({
         },
       })
     }),
-  addBatch: adminProcedure
+  addBatch: superadminProcedure
     .input(BatchSchema)
     .mutation(async ({ input, ctx }) => {
       const batch = await ctx.prisma.batch.create({
@@ -98,7 +99,7 @@ export const adminRouter = createTRPCRouter({
         })
       }
     }),
-  setCurrentBatch: adminProcedure
+  setCurrentBatch: superadminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await ctx.prisma.batch.updateMany({
@@ -119,7 +120,7 @@ export const adminRouter = createTRPCRouter({
         },
       })
     }),
-  deleteBatch: adminProcedure
+  deleteBatch: superadminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await ctx.prisma.batch.delete({

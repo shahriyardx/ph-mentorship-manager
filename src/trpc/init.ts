@@ -59,7 +59,7 @@ const isRole = (role: ("admin" | "mentor" | "user" | "superadmin")[]) =>
     if (!role.includes(ctx.session.user.role)) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "You are not authorized to access this resource",
+        message: "You are not authorized to perform this action",
       })
     }
     return next({
@@ -76,6 +76,7 @@ export const createCallerFactory = t.createCallerFactory
 export const publicProcedure = t.procedure
 export const protectedProcedure = t.procedure.use(isAuthenticated)
 export const adminProcedure = t.procedure.use(isRole(["admin", "superadmin"]))
+export const superadminProcedure = t.procedure.use(isRole(["superadmin"]))
 export const adminOrMentorProcedure = t.procedure.use(
   isRole(["admin", "mentor", "superadmin"]),
 )
