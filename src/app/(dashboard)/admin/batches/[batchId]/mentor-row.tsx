@@ -9,6 +9,7 @@ import type { inferRouterOutputs } from "@trpc/server"
 import type { appRouter } from "@/trpc/routers/_app"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 type MigrationProgress = {
   migrated: number
@@ -33,6 +34,9 @@ const MentorRow = ({
       link.download = data.filename
       link.click()
       link.remove()
+    },
+    onError: (error) => {
+      toast.error(error.message)
     },
   })
 
