@@ -371,19 +371,24 @@ export const adminRouter = createTRPCRouter({
       z.object({
         type: z.enum(["joined", "notJoined"]),
         batchId: z.string(),
+        mentorId: z.string().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const where = {
+        batchId: input.batchId,
+      } as Record<string, string>
+
+      if (input.mentorId) {
+        where.mentorId = input.mentorId
+      }
+
       const assignedStudents = await ctx.prisma.studentsData.findMany({
-        where: {
-          batchId: input.batchId,
-        },
+        where,
       })
 
       const joinedStudents = await ctx.prisma.student.findMany({
-        where: {
-          batchId: input.batchId,
-        },
+        where,
       })
 
       const notJoinedStudents = assignedStudents.filter(

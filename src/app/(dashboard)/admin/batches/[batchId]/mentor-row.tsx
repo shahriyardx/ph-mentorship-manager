@@ -27,7 +27,7 @@ const MentorRow = ({
 }) => {
   const { batchId } = useParams()
 
-  const { mutate: exportStudents } = trpc.mentor.exportStudents.useMutation({
+  const { mutate: exportStudents } = trpc.admin.exportStudents.useMutation({
     onSuccess: (data) => {
       const link = document.createElement("a")
       link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${data.base64}`

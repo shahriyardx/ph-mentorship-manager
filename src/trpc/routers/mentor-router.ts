@@ -45,13 +45,12 @@ export const mentorRouter = createTRPCRouter({
       z.object({
         type: z.enum(["joined", "notJoined"]),
         batchId: z.string(),
-        mentorId: z.string().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       const mentor = await ctx.prisma.mentor.findFirst({
         where: {
-          userId: input.mentorId || ctx.session.user.id,
+          userId: ctx.session.user.id,
         },
       })
 
