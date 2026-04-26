@@ -82,6 +82,7 @@ const MentorRow = ({
             exportStudents({
               type: "joined",
               batchId: batchId,
+              mentorId: mentor.userId,
             })
           }
         >
@@ -94,6 +95,7 @@ const MentorRow = ({
             exportStudents({
               type: "notJoined",
               batchId: batchId,
+              mentorId: mentor.userId,
             })
           }
         >
