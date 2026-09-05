@@ -31,7 +31,7 @@ model User {
   accounts      Account[]
 
   student Student?
-  mentor  Mentor?
+  mentors Mentor[]
 
   appliedForMentor Boolean @default(false)
 
@@ -90,15 +90,16 @@ model Verification {
 }
 
 model Batch {
-  id              String  @id @default(cuid())
-  name            String
+  id   String @id @default(cuid())
+  name String
+
+  /// Overrides Settings.serverId for this batch. Null = use the default.
   discordServerId String?
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  students      Student[]
-  students_data StudentsData[]
-  mentors       Mentor[]
+  students Student[]
+  mentors  Mentor[]
   isCurrent     Boolean        @default(false)
 
   @@map("batch")
@@ -111,55 +112,61 @@ model Mentor {
   categoryId            String?
   announcementChannelId String?
   discussionChannelId   String?
-  roleId                String?
+  helpChannelId         String?
+  resourceChannelId     String?
+
+  /// Discord role given to this instructor's students.
+  roleId       String?
+  /// Discord role given to the instructor themselves.
+  mentorRoleId String?
 
   batch  Batch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @unique
+  userId String
 
   discordChannelId String
-  students         Student[]
-  studentsDatas    StudentsData[]
+  students Student[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// One record per instructor per batch, so a mentor can run several cohorts
+  /// at once and each keeps its own students and channels.
+  @@unique([userId, batchId])
+  @@index([userId])
   @@map("mentor")
 }
 
+/// One row per student per batch, covering the whole lifecycle:
+///   imported        -> row exists
+///   assigned        -> mentorId is set
+///   joined          -> userId is set (only written once Discord succeeded)
 model Student {
   id    String @id @default(cuid())
+  name  String @default("")
   email String
+  phone String @default("")
 
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mentor         Mentor  @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  batch          Batch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  hasGivenAccess Boolean @default(false)
+  batchId String
+  batch   Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
-  userId   String @unique
-  mentorId String
-  batchId  String
+  /// Null until an admin assigns them to an instructor.
+  mentorId String?
+  mentor   Mentor? @relation(fields: [mentorId], references: [id], onDelete: SetNull)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  /// Null until the student signs in and claims this email.
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@map("student")
-}
-
-model StudentsData {
-  id       String @id @default(cuid())
-  email    String
-  mentorId String
-  batchId  String
-
-  mentor Mentor @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  batch  Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  joinedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([email, batchId])
-  @@map("students_data")
+  @@index([batchId])
+  @@index([mentorId])
+  @@map("student")
 }
 
 model Settings {

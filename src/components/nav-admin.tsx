@@ -11,6 +11,7 @@ import {
   Box,
   Settings2,
   TablePropertiesIcon,
+  UserRound,
   Users,
   UsersRound,
 } from "lucide-react"
@@ -33,10 +34,24 @@ export function NavAdmin() {
           </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton isActive={pathname === "/admin/batches"} asChild>
+          <SidebarMenuButton
+            isActive={pathname.startsWith("/admin/batches")}
+            asChild
+          >
             <Link href="/admin/batches">
               <TablePropertiesIcon />
               Batches
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname.startsWith("/admin/instructors")}
+            asChild
+          >
+            <Link href="/admin/instructors">
+              <UserRound />
+              Instructors
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

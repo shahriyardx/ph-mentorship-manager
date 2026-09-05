@@ -22,7 +22,7 @@ import { trpc } from "@/trpc/client"
 
 export function NavMentor() {
   const pathname = usePathname()
-  const { data: batches } = trpc.admin.batches.useQuery()
+  const { data: batches } = trpc.mentor.myBatches.useQuery()
 
   return (
     <SidebarGroup>

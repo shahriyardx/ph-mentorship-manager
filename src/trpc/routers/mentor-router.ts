@@ -1,9 +1,71 @@
 import { createTRPCRouter, adminOrMentorProcedure } from "../init"
 import z from "zod"
 import { TRPCError } from "@trpc/server"
+import { findBatchServerId } from "@/lib/settings"
 import ExcelJS from "exceljs"
 
 export const mentorRouter = createTRPCRouter({
+  /** Every batch this instructor runs, each with its own counts and channels. */
+  overview: adminOrMentorProcedure.query(async ({ ctx }) => {
+    const mentors = await ctx.prisma.mentor.findMany({
+      where: { userId: ctx.session.user.id },
+      include: { batch: true },
+      orderBy: { createdAt: "desc" },
+    })
+
+    if (mentors.length === 0) {
+      return null
+    }
+
+    const batches = await Promise.all(
+      mentors.map(async (mentor) => {
+        const where = mentor.batchId
+          ? { mentorId: mentor.id, batchId: mentor.batchId }
+          : { mentorId: mentor.id }
+
+        const [assigned, joined] = await Promise.all([
+          ctx.prisma.student.count({ where }),
+          ctx.prisma.student.count({
+            where: { ...where, userId: { not: null } },
+          }),
+        ])
+
+        return {
+          mentorId: mentor.id,
+          batch: mentor.batch,
+          assigned,
+          joined,
+          serverId: mentor.batchId
+            ? await findBatchServerId(mentor.batchId)
+            : null,
+          announcementChannelId: mentor.announcementChannelId,
+          discussionChannelId: mentor.discussionChannelId,
+          helpChannelId: mentor.helpChannelId,
+          resourceChannelId: mentor.resourceChannelId,
+        }
+      }),
+    )
+
+    return {
+      batches,
+      totals: {
+        assigned: batches.reduce((sum, b) => sum + b.assigned, 0),
+        joined: batches.reduce((sum, b) => sum + b.joined, 0),
+      },
+    }
+  }),
+  /** The batches this instructor runs, for the sidebar. */
+  myBatches: adminOrMentorProcedure.query(async ({ ctx }) => {
+    const mentors = await ctx.prisma.mentor.findMany({
+      where: { userId: ctx.session.user.id, batchId: { not: null } },
+      include: { batch: true },
+      orderBy: { createdAt: "desc" },
+    })
+
+    return mentors
+      .map((mentor) => mentor.batch)
+      .filter((batch) => batch !== null)
+  }),
   students: adminOrMentorProcedure
     .input(
       z.object({
@@ -11,34 +73,27 @@ export const mentorRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const mentor = await ctx.prisma.mentor.findUnique({
+      const mentor = await ctx.prisma.mentor.findFirst({
         where: {
           userId: ctx.session.user.id,
+          batchId: input.batchId,
         },
       })
 
       if (!mentor) {
-        return { assignedStudents: [], joinedStudents: [] }
+        return { students: [] }
       }
 
-      const assignedStudents = await ctx.prisma.studentsData.findMany({
+      const students = await ctx.prisma.student.findMany({
         where: {
-          mentorId: mentor?.id,
+          mentorId: mentor.id,
           batchId: input.batchId,
         },
+        include: { user: true },
+        orderBy: [{ userId: "desc" }, { name: "asc" }],
       })
 
-      const joinedStudents = await ctx.prisma.student.findMany({
-        where: {
-          mentorId: mentor?.id,
-          batchId: input.batchId,
-        },
-        include: {
-          user: true,
-        },
-      })
-
-      return { assignedStudents, joinedStudents }
+      return { students }
     }),
   exportStudents: adminOrMentorProcedure
     .input(
@@ -51,45 +106,42 @@ export const mentorRouter = createTRPCRouter({
       const mentor = await ctx.prisma.mentor.findFirst({
         where: {
           userId: ctx.session.user.id,
+          batchId: input.batchId,
         },
       })
 
       if (!mentor) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Mentor not found",
+          message: "You do not run this batch",
         })
       }
 
-      const assignedStudents = await ctx.prisma.studentsData.findMany({
+      const students = await ctx.prisma.student.findMany({
         where: {
           batchId: input.batchId,
           mentorId: mentor.id,
+          userId: input.type === "joined" ? { not: null } : null,
         },
+        orderBy: { name: "asc" },
       })
-
-      const joinedStudents = await ctx.prisma.student.findMany({
-        where: {
-          batchId: input.batchId,
-          mentorId: mentor.id,
-        },
-      })
-
-      const notJoinedStudents = assignedStudents.filter(
-        (student) => !joinedStudents.some((j) => j.email === student.email),
-      )
-
-      const students =
-        input.type === "joined" ? joinedStudents : notJoinedStudents
 
       const workbook = new ExcelJS.Workbook()
-      const sheet = workbook.addWorksheet("Emails")
-      sheet.columns = [{ header: "email", key: "email", width: 30 }]
+      const sheet = workbook.addWorksheet("Students")
+      sheet.columns = [
+        { header: "Name", key: "name", width: 30 },
+        { header: "Email", key: "email", width: 30 },
+        { header: "Phone", key: "phone", width: 20 },
+      ]
       sheet.getRow(1).font = { bold: true, name: "Arial" }
       sheet.getRow(1).alignment = { horizontal: "center" }
 
       students.forEach((student) => {
-        sheet.addRow({ email: student.email })
+        sheet.addRow({
+          name: student.name,
+          email: student.email,
+          phone: student.phone,
+        })
       })
 
       const buffer = await workbook.xlsx.writeBuffer()

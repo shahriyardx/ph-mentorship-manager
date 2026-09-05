@@ -20,7 +20,7 @@ export const getAuth = () => {
     socialProviders: {
       discord: {
         clientId: env.DISCORD_CLIENT_ID,
-        clientSecret: env.DICSORD_CLIENT_SECRET,
+        clientSecret: env.DISCORD_CLIENT_SECRET,
         scope: ["identify", "email", "guilds.join"],
         mapProfileToUser: (profile) => {
           if (!profile.email) return { email: null }
@@ -48,7 +48,7 @@ export const addUserToGuild = async (
       {
         method: "PUT",
         headers: {
-          Authorization: `Bot ${env.DISCORD_TOKEN}`,
+          Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -74,7 +74,7 @@ export const giveChannelAccess = async (
     {
       method: "PUT",
       headers: {
-        Authorization: `Bot ${env.DISCORD_TOKEN}`,
+        Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

@@ -18,7 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Programming Hero Mentorship",
-  description: "One to one mentorship program for programming hero students",
+  description:
+    "One to one mentorship program for Programming Hero students. Get matched with a dedicated mentor and a private Discord squad.",
 }
 
 export default function RootLayout({

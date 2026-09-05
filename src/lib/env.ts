@@ -7,8 +7,8 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string(),
     BETTER_AUTH_URL: z.string(),
     DISCORD_CLIENT_ID: z.string(),
-    DICSORD_CLIENT_SECRET: z.string(),
-    DISCORD_TOKEN: z.string(),
+    DISCORD_CLIENT_SECRET: z.string(),
+    DISCORD_BOT_TOKEN: z.string(),
   },
   client: {},
   runtimeEnv: {
@@ -16,7 +16,7 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-    DICSORD_CLIENT_SECRET: process.env.DICSORD_CLIENT_SECRET,
-    DISCORD_TOKEN: process.env.DISCORD_TOKEN,
+    DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+    DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
   },
 })

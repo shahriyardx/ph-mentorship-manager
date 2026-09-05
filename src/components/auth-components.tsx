@@ -16,41 +16,47 @@ export const SignIn = () => {
 
     return "Something went wrong. Please try again."
   }, [error])
+
   return (
-    <div className="mt-5 border-2 rounded-md p-10 text-center">
+    <div>
       {error && (
-        <Alert className="mb-5" variant="destructive">
+        <Alert className="mb-6 max-w-md" variant="destructive">
           {errorMessage}
         </Alert>
       )}
 
-      <h1 className="text-xl sm:text-2xl font-bold">Sign in to continue</h1>
-      <p className="mt-2 text-muted-foreground text-sm sm:text-base">
-        Before you can access the mentorship program, please sign in with your
-        Discord account. If you don't have an account, you can create one for
-        free from{" "}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <Button
+          onClick={() =>
+            authClient.signIn.social({
+              provider: "discord",
+              callbackURL: "/",
+              errorCallbackURL: "/",
+            })
+          }
+          className="h-12 rounded-full bg-gradient-to-r from-[var(--ph-brand)] to-[var(--ph-brand-2)] px-8 text-sm font-medium text-white transition-transform duration-200 hover:scale-[1.02] hover:opacity-95"
+        >
+          Join Mentorship Program
+        </Button>
+
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[var(--ph-muted)]">
+          Takes about 10 seconds
+        </p>
+      </div>
+
+      <p className="mt-5 max-w-[46ch] text-sm leading-relaxed text-[var(--ph-muted)]">
+        Use the Discord account you want your mentorship channels on. No account
+        yet?{" "}
         <a
           target="_blank"
           href="https://discord.com"
-          className="text-primary"
+          className="text-[var(--ph-text)] underline decoration-[var(--ph-brand)] decoration-2 underline-offset-4 transition-colors hover:text-[var(--ph-brand-2)]"
           rel="noopener"
         >
-          Discord.com
+          Create one free
         </a>
         .
       </p>
-      <Button
-        onClick={() =>
-          authClient.signIn.social({
-            provider: "discord",
-            callbackURL: "/",
-            errorCallbackURL: "/",
-          })
-        }
-        className="p-6 rounded-full bg-indigo-500 text-white cursor-pointer hover:bg-indigo-600 w-full mt-5"
-      >
-        Sign In with Discord
-      </Button>
     </div>
   )
 }

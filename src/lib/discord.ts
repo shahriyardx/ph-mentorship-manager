@@ -12,7 +12,7 @@ import {
   type APIRole,
 } from "discord-api-types/v10"
 
-export const rest = new REST({ version: "10" }).setToken(env.DISCORD_TOKEN)
+export const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN)
 
 export const getTextChannels = async (guild_id: string) => {
   const channels = (await rest.get(

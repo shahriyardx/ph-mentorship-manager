@@ -2,6 +2,7 @@ import z from "zod"
 import { createTRPCRouter, protectedProcedure } from "../init"
 import { TRPCError } from "@trpc/server"
 import { addRoleToUser, addUserToGuild } from "@/lib/discord"
+import { findBatchServerId, requireBatchServerId } from "@/lib/settings"
 import { prisma } from "@/lib/prisma"
 
 export const studentRouter = createTRPCRouter({
@@ -19,13 +20,12 @@ export const studentRouter = createTRPCRouter({
       },
     })
 
-    const batch = await ctx.prisma.batch.findFirst({
-      where: {
-        id: student?.batchId,
-      },
-    })
-
-    return { student, serverId: batch?.discordServerId ?? "" }
+    return {
+      student,
+      serverId: student
+        ? ((await findBatchServerId(student.batchId)) ?? "")
+        : "",
+    }
   }),
   joinMentorship: protectedProcedure
     .input(
@@ -42,12 +42,21 @@ export const studentRouter = createTRPCRouter({
         input.email,
         currentBatch.id,
       )
+      if (!assignedStudent.mentorId) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "You have not been assigned to a mentor yet. Please try again later.",
+        })
+      }
+
+      const serverId = await requireBatchServerId(assignedStudent.batchId)
       const mentor = await getMentor(assignedStudent.mentorId)
-      const batch = await getBatch(assignedStudent.batchId)
+      await getBatch(assignedStudent.batchId)
 
       try {
         await addUserToGuild(
-          batch?.discordServerId as string,
+          serverId,
           account.accountId,
           account.accessToken as string,
         )
@@ -61,7 +70,7 @@ export const studentRouter = createTRPCRouter({
 
       try {
         await addRoleToUser(
-          batch.discordServerId as string,
+          serverId,
           account.accountId,
           mentor.roleId as string,
         )
@@ -72,20 +81,18 @@ export const studentRouter = createTRPCRouter({
         })
       }
 
-      await ctx.prisma.student.create({
+      await ctx.prisma.student.update({
+        where: { id: assignedStudent.id },
         data: {
-          email: assignedStudent.email,
           userId: ctx.session.user.id,
-          mentorId: assignedStudent.mentorId,
-          batchId: assignedStudent.batchId,
-          hasGivenAccess: true,
+          joinedAt: new Date(),
         },
       })
     }),
 })
 
 const getAssignedStudent = async (email: string, batchId: string) => {
-  const assignedStudent = await prisma.studentsData.findFirst({
+  const assignedStudent = await prisma.student.findFirst({
     where: {
       email: {
         equals: email,
@@ -128,6 +135,7 @@ const checkStudent = async (email: string, batchId: string) => {
         mode: "insensitive",
       },
       batchId: batchId,
+      userId: { not: null },
     },
   })
   if (student)
