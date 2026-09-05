@@ -13,9 +13,10 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogInIcon } from "lucide-react"
+import { LayoutDashboard, LogInIcon, LogOut } from "lucide-react"
 
 const Header = () => {
   const pathname = usePathname()
@@ -23,6 +24,14 @@ const Header = () => {
 
   const inDashboard =
     pathname.startsWith("/admin") || pathname.startsWith("/mentor")
+
+  // Admins land on the admin dashboard, mentors on theirs, students get nothing.
+  const role = data?.user.role
+  const dashboardHref = ["admin", "superadmin"].includes(role ?? "")
+    ? "/admin"
+    : role === "mentor"
+      ? "/mentor"
+      : null
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--ph-line)] bg-[color-mix(in_oklab,var(--ph-bg)_78%,transparent)] backdrop-blur-xl">
@@ -53,30 +62,6 @@ const Header = () => {
         </Link>
 
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          {data && !inDashboard && (
-            <>
-              {["admin", "superadmin"].includes(data.user.role) && (
-                <Button
-                  variant="outline"
-                  asChild
-                  className="border-[var(--ph-line-strong)] bg-transparent font-mono text-xs uppercase tracking-[0.14em] hover:bg-[var(--ph-bg-soft)]"
-                >
-                  <Link href="/admin">Admin</Link>
-                </Button>
-              )}
-
-              {data.user.role === "mentor" && (
-                <Button
-                  variant="outline"
-                  asChild
-                  className="border-[var(--ph-line-strong)] bg-transparent font-mono text-xs uppercase tracking-[0.14em] hover:bg-[var(--ph-bg-soft)]"
-                >
-                  <Link href="/mentor">Mentor</Link>
-                </Button>
-              )}
-            </>
-          )}
-
           <ShowIfNotAuthenticated>
             <Button
               onClick={() => authClient.signIn.social({ provider: "discord" })}
@@ -103,15 +88,50 @@ const Header = () => {
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-64">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel className="font-normal">
-                    <span className="block text-sm">{data.user.name}</span>
-                    <span className="block text-xs text-muted-foreground">
-                      {data.user.email}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-8 shrink-0">
+                        <AvatarImage
+                          src={data.user.image ?? undefined}
+                          alt={data.user.name ?? undefined}
+                        />
+                        <AvatarFallback className="text-xs">
+                          {data.user.name?.[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      {/* min-w-0 lets the email truncate instead of overflowing */}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">
+                          {data.user.name}
+                        </p>
+                        <p
+                          className="text-muted-foreground truncate text-xs"
+                          title={data.user.email}
+                        >
+                          {data.user.email}
+                        </p>
+                      </div>
+                    </div>
                   </DropdownMenuLabel>
+                  {dashboardHref && !inDashboard && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href={dashboardHref}>
+                          <LayoutDashboard className="size-4" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+
+                  <DropdownMenuSeparator />
+
                   <DropdownMenuItem onClick={() => authClient.signOut()}>
+                    <LogOut className="size-4" />
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
