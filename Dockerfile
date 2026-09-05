@@ -14,7 +14,9 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV SKIP_ENV_VALIDATION=1
 
-RUN bun prisma migrate deploy
+# Migrations are NOT run here: the build has no database, and an image build
+# must never mutate a live one. Run `bun prisma migrate deploy` as a release
+# step before starting the new container.
 RUN bun prisma generate
 RUN bun run build
 

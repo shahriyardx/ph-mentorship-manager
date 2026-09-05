@@ -11,6 +11,10 @@ export const env = createEnv({
     DISCORD_BOT_TOKEN: z.string(),
   },
   client: {},
+  // The Dockerfile sets SKIP_ENV_VALIDATION so an image can be built without
+  // production secrets; they are supplied when the container runs.
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  emptyStringAsUndefined: true,
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,

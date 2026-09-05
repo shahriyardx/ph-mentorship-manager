@@ -1,0 +1,24 @@
+# Secrets must never enter an image layer.
+.env
+.env.*
+!.env.example
+
+# Reinstalled inside the image.
+node_modules
+
+# Build output, regenerated inside the image.
+.next
+out
+src/generated
+*.tsbuildinfo
+next-env.d.ts
+
+# Not needed at runtime.
+.git
+.gitignore
+.github
+.zed
+.vscode
+README.md
+docker-compose.yml
+Dockerfile

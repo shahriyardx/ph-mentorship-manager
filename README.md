@@ -45,8 +45,8 @@ cp .env.example .env
 | Variable | What it is |
 |---|---|
 | `DATABASE_URL` | Postgres connection string |
-| `BETTER_AUTH_SECRET` | Random string, 32+ characters |
-| `BETTER_AUTH_URL` | Base URL of the app |
+| `BETTER_AUTH_SECRET` | Random string, 32+ characters (`openssl rand -base64 32`) |
+| `BETTER_AUTH_URL` | Public URL of the app |
 | `NEXT_PUBLIC_BASE_URL` | Same; optional on Vercel |
 | `DISCORD_CLIENT_ID` | OAuth2 client id |
 | `DISCORD_CLIENT_SECRET` | OAuth2 client secret |
@@ -80,74 +80,77 @@ bun dev
 3. Set the Discord server at `/admin/settings`.
 4. Create a batch and mark it **current**.
 
-## How it works
+## Deployment
 
-### Roles
+### Before the first deploy
 
-`User.role` is one of `user`, `mentor`, `admin`, `superadmin`. Users cannot set
-their own role — better-auth is configured with `input: false` on the field.
+- Point `BETTER_AUTH_URL` and `NEXT_PUBLIC_BASE_URL` at the real https origin.
+- Add `<your-domain>/api/auth/callback/discord` to the Discord app's OAuth2
+  redirect URLs. Sign-in fails with a redirect mismatch otherwise.
+- Generate a fresh `BETTER_AUTH_SECRET`. Never reuse the development one.
+- Invite the bot to the production Discord server and check its role sits above
+  the roles it will create.
 
-Enforced in two places: `src/proxy.ts` guards the `/admin` and `/mentor` URLs,
-and `src/trpc/init.ts` guards every API call.
+### Migrations
 
-| Procedure | Who |
-|---|---|
-| `publicProcedure` | anyone |
-| `protectedProcedure` | any signed-in user |
-| `adminOrMentorProcedure` | mentor, admin, superadmin |
-| `adminProcedure` | admin, superadmin |
-| `superadminProcedure` | superadmin only |
+Run them as a **release step** — after the image is built, before the new
+version serves traffic:
 
-Batches, the Discord server and maintenance mode are superadmin-only. Only a
-superadmin can grant admin, and nobody can change a superadmin's role.
-
-### The flow
-
-```
-1. Import    Excel (Name, Email, Phone) into a batch  ->  unassigned
-2. Assign    paste emails on an instructor            ->  mentorId set
-3. Join      student signs in, claims their email     ->  userId set
-4. Access    they receive the instructor's student role
+```bash
+bun prisma migrate deploy
 ```
 
-A student cannot join until they have been assigned to an instructor.
+Use `migrate deploy`, never `migrate dev` or `db push`, against a real database.
+`migrate deploy` only applies committed migrations and never drops anything.
 
-### One student table
+The Docker image deliberately does **not** run migrations during build: a build
+has no database, and building an image must not mutate a live one.
 
-`student` holds one row per student per batch and covers the whole lifecycle, so
-state is derived rather than duplicated:
+### Docker
 
-| State | How you know |
-|---|---|
-| imported | the row exists |
-| assigned | `mentorId` is set |
-| joined | `userId` is set |
+The `Dockerfile` is a multi-stage build producing a Next.js standalone server.
 
-Joining writes `userId` only after the Discord calls succeed, so a joined student
-always has their role.
+```bash
+docker build -t mentorship-manager .
 
-### Instructors
-
-One `mentor` record per user **per batch**, so someone can run several cohorts at
-once, each with its own students and channels.
-
-Adding an instructor creates, in that batch's Discord server:
-
-```
-<name>-squad                    category
- ├─ announcements    text       instructor posts, students read
- ├─ discussion       text       everyone talks
- ├─ help             forum      students open their own posts
- └─ resources        text       instructor shares links, students read
+docker run -d --name mentorship \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgres://user:pass@host:5432/db" \
+  -e BETTER_AUTH_SECRET="..." \
+  -e BETTER_AUTH_URL="https://your-domain" \
+  -e NEXT_PUBLIC_BASE_URL="https://your-domain" \
+  -e DISCORD_CLIENT_ID="..." \
+  -e DISCORD_CLIENT_SECRET="..." \
+  -e DISCORD_BOT_TOKEN="..." \
+  mentorship-manager
 ```
 
-plus two roles — `<name>-mentor` (green, held by the instructor) and
-`<name>-squad` (uncoloured, held by their students). `@everyone` is denied on the
-category, so squads cannot see each other. Permissions are attached to the
-**roles**, not to the person, so channels keep working if an account changes.
+The build sets `SKIP_ENV_VALIDATION=1`, so no secrets are needed to produce an
+image — they are supplied when the container runs. `NEXT_PUBLIC_BASE_URL` is the
+one exception in spirit: it is inlined into the client bundle at build time, so
+if you rely on it rather than same-origin requests, pass it as a build arg too.
 
-**Re-sync roles** on the instructor page re-applies every student's role. Discord
-role assignment is idempotent, so it doubles as a repair.
+`.dockerignore` keeps `.env`, `node_modules` and `.next` out of the image — the
+first of those matters, since `COPY . .` would otherwise bake your secrets into
+an image layer.
+
+`docker-compose.yml` provides Postgres only, for local development. It does not
+run the app.
+
+### Vercel
+
+Works without changes. Add all the environment variables above, then run
+`bun prisma migrate deploy` against the production database from your machine or
+CI — Vercel builds cannot reach a private database.
+
+### Deployment checklist
+
+1. `bun run lint` and `bun run build` pass.
+2. Environment variables set on the host.
+3. `bun prisma migrate deploy` applied.
+4. Deploy, then sign in and confirm `/admin` loads.
+5. On a brand-new database, the first person to visit `/admin` becomes
+   superadmin — do this yourself immediately, before sharing the URL.
 
 ## Layout
 
